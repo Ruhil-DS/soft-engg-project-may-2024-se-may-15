@@ -1,1 +1,1 @@
-# make this file into the main runner executable.
+# make this file into the main runner executable. 2 threads, one for Vue one for flask.
