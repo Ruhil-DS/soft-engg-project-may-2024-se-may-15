@@ -1,0 +1,17 @@
+endpoints:
+  - url: /summery/lecture
+    method: POST
+    request:
+      body:
+        type: object
+        properties:
+          week_num:
+            type: integer
+          lecture_num:
+            type: integer
+    response:
+      body:
+        type: object
+        properties:
+          summery:
+            type: string
