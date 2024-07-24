@@ -1,17 +1,757 @@
-endpoints:
-  - url: /summery/lecture
-    method: POST
-    request:
-      body:
-        type: object
-        properties:
-          week_num:
+Seek++: 1.0.0
+info:
+  title: SE Project
+  description: This file provides a list of all the endpoints that are available in the Seek++ API.
+  version: 1.0.0
+
+paths:
+
+  /api/login/:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /api/register/:
+    post:
+      summary: User registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        200:
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /api/summary/video/{week_num}/{lecture_num}:
+    get:
+      summary: Get video lecture summary
+      parameters:
+        - in: path
+          name: week_num
+          schema:
             type: integer
-          lecture_num:
+          required: true
+          description: Week number
+        - in: path
+          name: lecture_num
+          schema:
             type: integer
-    response:
-      body:
-        type: object
-        properties:
-          summery:
+          required: true
+          description: Lecture number
+      responses:
+        200:
+          description: Video summary retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: string
+
+  /api/summary/slides/{week_num}/{lecture_num}:
+    get:
+      summary: Get slides lecture summary
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+        - in: path
+          name: lecture_num
+          schema:
+            type: integer
+          required: true
+          description: Lecture number
+      responses:
+        200:
+          description: Slides summary retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: string
+
+  /api/translate/:
+    post:
+      summary: Translate text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                language:
+                  type: string
+              required:
+                - text
+                - language
+      responses:
+        200:
+          description: Text translated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  translation:
+                    type: string
+
+  /api/assignment/generate/theory/{week_num}/:
+    post:
+      summary: Generate theory questions
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      responses:
+        200:
+          description: Theory questions generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        question:
+                          type: string
+                        options:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              option_num:
+                                type: integer
+                              option:
+                                type: string
+                        correct_option:
+                          type: integer
+    get:
+      summary: Get previously generated theory questions
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      responses:
+        200:
+          description: Previously generated theory questions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        question:
+                          type: string
+                        options:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              option_num:
+                                type: integer
+                              option:
+                                type: string
+                        correct_option:
+                          type: integer
+
+  /api/assignment/generate/programming/{week_num}/:
+    post:
+      summary: Generate programming questions
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      responses:
+        200:
+          description: Programming questions generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        question:
+                          type: string
+                        test_cases:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              test_case_num:
+                                type: integer
+                              input:
+                                type: string
+                              output:
+                                type: string
+    get:
+      summary: Get previously generated programming questions
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      responses:
+        200:
+          description: Previously generated programming questions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        question:
+                          type: string
+                        test_cases:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              test_case_num:
+                                type: integer
+                              input:
+                                type: string
+                              output:
+                                type: string
+
+  /api/assignment/submit/theory/{week_num}/:
+    post:
+      summary: Submit answers for theory assignment
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answer:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_num:
+                        type: integer
+                      answer:
+                        type: integer
+      responses:
+        200:
+          description: Theory assignment submitted and score returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        correct:
+                          type: boolean
+
+  /api/assignment/submit/programming/{week_num}/{question_num}/:
+    post:
+      summary: Submit programming assignment solution
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+        - in: path
+          name: question_num
+          schema:
+            type: integer
+          required: true
+          description: Question number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answer:
+                  type: string
+      responses:
+        200:
+          description: Programming assignment submitted and score returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        public_test_cases:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              test_case_number:
+                                type: integer
+                              passed:
+                                type: boolean
+
+  /api/assignment/GA/{week_num}/:
+    get:
+      summary: Get GA questions
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      responses:
+        200:
+          description: GA questions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        question:
+                          type: string
+                        options:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              option_num:
+                                type: integer
+                              option:
+                                type: string
+                        correct_option:
+                          type: integer
+
+  /api/assignment/GrPA/{week_num}/:
+    get:
+      summary: Get GrPA questions
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      responses:
+        200:
+          description: GrPA questions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        question:
+                          type: string
+                        test_cases:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              test_case_num:
+                                type: integer
+                              input:
+                                type: string
+                              output:
+                                type: string
+
+  /api/assignment/submit/GA/{week_num}/:
+    post:
+      summary: Submit answers for GA assignment
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answer:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_num:
+                        type: integer
+                      answer:
+                        type: integer
+      responses:
+        200:
+          description: GA assignment submitted and score returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                        correct:
+                          type: boolean
+
+  /api/assignment/submit/GrPA/{week_num}/{question_num}/:
+    post:
+      summary: Submit GrPA assignment solution
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+        - in: path
+          name: question_num
+          schema:
+            type: integer
+          required: true
+          description: Question number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answer:
+                  type: string
+      responses:
+        200:
+          description: GrPA assignment submitted and score returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        public_test_cases:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              test_case_number:
+                                type: integer
+                              passed:
+                                type: boolean
+                        private_test_case:
+                          type: string
+
+  /api/assignment/feedback/{assignment_type}/{week_num}/:
+    post:
+      summary: Get feedback for assignment
+      parameters:
+        - in: path
+          name: assignment_type
+          schema:
             type: string
+          required: true
+          description: Assignment type
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_id:
+                        type: string
+                      answer:
+                        type: integer
+      responses:
+        200:
+          description: Feedback for assignment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedback:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_id:
+                          type: string
+                        correct:
+                          type: boolean
+                        feedback:
+                          type: string
+                        suggestions:
+                          type: string
+
+  /api/assignment/suggestion/{assignment_type}/{week_num}/{question_num}/:
+    get:
+      summary: Get suggestions for programming question
+      parameters:
+        - in: path
+          name: assignment_type
+          schema:
+            type: string
+          required: true
+          description: Assignment type
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+        - in: path
+          name: question_num
+          schema:
+            type: integer
+          required: true
+          description: Question number
+      responses:
+        200:
+          description: Suggestions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: string
+
+  /api/pain_point/:
+    get:
+      summary: Get pain points and revision plan
+      responses:
+        200:
+          description: Pain points and revision plan retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pain_points:
+                    type: string
+                  revision_plan:
+                    type: string
+
+  /api/transcript_to_code/:
+    post:
+      summary: Convert transcript to code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transcript:
+                  type: string
+      responses:
+        200:
+          description: Transcript converted to code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+
+  /api/chatbot/query/:
+    post:
+      summary: Query chatbot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+      responses:
+        200:
+          description: Chatbot response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+
+  /api/assignment/{week_num}/{question_num}/:
+    get:
+      summary: Get test cases for instructors
+      parameters:
+        - in: path
+          name: week_num
+          schema:
+            type: integer
+          required: true
+          description: Week number
+        - in: path
+          name: question_num
+          schema:
+            type: integer
+          required: true
+          description: Question number
+      responses:
+        200:
+          description: Test cases retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  public_test_cases:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_case_id:
+                          type: integer
+                        input:
+                          type: string
+                        output:
+                          type: string
+                  private_test_cases:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_case_id:
+                          type: integer
+                        input:
+                          type: string
+                        output:
+                          type: string
