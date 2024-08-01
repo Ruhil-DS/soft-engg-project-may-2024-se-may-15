@@ -48,7 +48,7 @@ info:
     guiding template for her/him to make the desired request and communicate
     appropriately and effectively with the backend.
     
-  version: 1.0.0
+  version: 1.0.1
   
 servers:
 - url: https://127.0.0.1:5000/api/v1
@@ -141,6 +141,15 @@ paths:
                   message:
                     type: string
                     example: user logged in
+                  email:
+                    type: string
+                    example: user1@email.com
+                  username:
+                    type: string
+                    example: user1
+                  auth_token:
+                    type: string
+                    example: sample-auth-token
         '400':
           description: All user credentials are required
         '401':
@@ -287,6 +296,7 @@ paths:
     post:
       tags:
       - "Assignment Component"
+      - "GenAI Components"
       summary: Generate the theoretical practice assignment (PA)
       description: Generate the theoretical practice assignment (PA) for a given module
       parameters:
@@ -335,17 +345,20 @@ paths:
                 assessment_type:
                   type: string
                   example: "practice"
-                due_date:
-                  type: string
-                  example: "2024-10-10T23:59:59.000Z"
                 submission_date:
                   type: string
                   example: "2024-10-09T10:30:00.000Z"
                 submission:
                   type: array
                   items:
-                    type: integer
-                    example: 1
+                    type: object
+                    properties:
+                      question_num:
+                        type: integer
+                        example: 1
+                      option_num:
+                        type: integer
+                        example: 1
       responses:
         '201':
           description: Successful submission of PA
@@ -363,13 +376,25 @@ paths:
                   submission:
                     type: array
                     items:
-                      type: integer
-                      example: 1
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                          example: 1
+                        option_num:
+                          type: integer
+                          example: 1
                   correct_options:
                     type: array
                     items:
-                      type: integer
-                      example: 1
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                          example: 1
+                        option_num:
+                          type: integer
+                          example: 1
         '400':
           description: Invalid submission
         '404':
@@ -402,6 +427,7 @@ paths:
     post:
       tags:
       - "Assignment Component"
+      - "GenAI Components"
       summary: Generate the programming practice assignment (PrPA)
       description: Generate the programming practice assignment (PrPA) for a given module
       parameters:
@@ -450,20 +476,25 @@ paths:
                 assessment_type:
                   type: string
                   example: "practice"
-                due_date:
-                  type: string
-                  example: "2024-10-10T23:59:59.000Z"
                 submission_date:
                   type: string
                   example: "2024-10-09T10:30:00.000Z"
                 submission:
-                  type: string
-                  example: |-
-                    def list_sum(a):
-                      sum = 0
-                      for i in a:
-                        sum += i
-                      return sum
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_num:
+                        type: integer
+                        example: 1
+                      code_submission:
+                        type: string
+                        example: |-
+                          def list_sum(a):
+                            sum = 0
+                            for i in a:
+                              sum += i
+                            return sum
       responses:
         '201':
           description: Successful submission of PrPA
@@ -476,48 +507,56 @@ paths:
                     type: string
                     example: "Successfully submitted assignment"
                   submission:
-                    type: string
-                    example: |-
-                      def list_sum(a):
-                        sum = 0
-                        for i in a:
-                          sum += i
-                        return sum
-                  test_cases:
-                    type: object
-                    properties:
-                      public:
-                        type: object
-                        properties:
-                          grade:
-                            type: string
-                            example: "1/1"
-                          expected_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "10"
-                          actual_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "10"
-                      private:
-                        type: object
-                        properties:
-                          grade:
-                            type: string
-                            example: "1/1"
-                          expected_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "-2"
-                          actual_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "-2"
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                          example: 1
+                        code_submission:
+                          type: string
+                          example: |-
+                            def list_sum(a):
+                              sum = 0
+                              for i in a:
+                                sum += i
+                              return sum
+                        test_cases:
+                          type: object
+                          properties:
+                            public:
+                              type: object
+                              properties:
+                                grade:
+                                  type: string
+                                  example: "1/1"
+                                expected_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "10"
+                                actual_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "10"
+                            private:
+                              type: object
+                              properties:
+                                grade:
+                                  type: string
+                                  example: "1/1"
+                                expected_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "-2"
+                                actual_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "-2"
         '400':
           description: Invalid submission
         '404':
@@ -609,17 +648,20 @@ paths:
                 assessment_type:
                   type: string
                   example: "graded"
-                due_date:
-                  type: string
-                  example: "2024-10-10T23:59:59.000Z"
                 submission_date:
                   type: string
                   example: "2024-10-09T10:30:00.000Z"
                 submission:
                   type: array
                   items:
-                    type: integer
-                    example: 1
+                    type: object
+                    properties:
+                      question_num:
+                        type: integer
+                        example: 1
+                      option_num:
+                        type: integer
+                        example: 1
       responses:
         '201':
           description: Successful submission of GA
@@ -735,20 +777,25 @@ paths:
                 assessment_type:
                   type: string
                   example: "graded"
-                due_date:
-                  type: string
-                  example: "2024-10-10T23:59:59.000Z"
                 submission_date:
                   type: string
                   example: "2024-10-09T10:30:00.000Z"
                 submission:
-                  type: string
-                  example: |-
-                    def list_product(a):
-                      product = 1
-                      for i in a:
-                        product *= i
-                      return product
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_num:
+                        type: integer
+                        example: 1
+                      code_submission:
+                        type: string
+                        example: |-
+                          def list_product(a):
+                            product = 1
+                            for i in a:
+                              product *= i
+                            return product
       responses:
         '201':
           description: Successful submission of GrPA
@@ -761,48 +808,56 @@ paths:
                     type: string
                     example: "Successfully submitted assignment"
                   submission:
-                    type: string
-                    example: |-
-                      def list_product(a):
-                        product = 1
-                        for i in a:
-                          product *= i
-                        return product
-                  test_cases:
-                    type: object
-                    properties:
-                      public:
-                        type: object
-                        properties:
-                          grade:
-                            type: string
-                            example: "1/1"
-                          expected_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "24"
-                          actual_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "24"
-                      private:
-                        type: object
-                        properties:
-                          grade:
-                            type: string
-                            example: "1/1"
-                          expected_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "24"
-                          actual_output:
-                            type: array
-                            items:
-                              type: string
-                              example: "24"
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                          example: 1
+                        code_submission:
+                          type: string
+                          example: |-
+                            def list_product(a):
+                              product = 1
+                              for i in a:
+                                product *= i
+                              return product
+                        test_cases:
+                          type: object
+                          properties:
+                            public:
+                              type: object
+                              properties:
+                                grade:
+                                  type: string
+                                  example: "1/1"
+                                expected_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "24"
+                                actual_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "24"
+                            private:
+                              type: object
+                              properties:
+                                grade:
+                                  type: string
+                                  example: "1/1"
+                                expected_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "24"
+                                actual_output:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "24"
         '400':
           description: Invalid submission
         '404':
@@ -912,20 +967,9 @@ paths:
                   items:
                     type: object
                     properties:
-                      question:
-                        type: string
-                        example: "Which of the following is an example of a list?"
-                      options:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            option_num:
-                              type: integer
-                              example: 1
-                            option:
-                              type: string
-                              example: "[1, 2, 3]"
+                      question_num:
+                        type: integer
+                        example: 1
                       correct_option_num:
                         type: integer
                         example: 1
@@ -945,9 +989,9 @@ paths:
                     items:
                       type: object
                       properties:
-                        question:
-                          type: string
-                          example: "Which of the following is an example of a list?"
+                        question_num:
+                          type: integer
+                          example: 1
                         correct_option_num:
                           type: integer
                           example: 1
@@ -996,45 +1040,50 @@ paths:
                 assignment_type:
                   type: string
                   example: "programming"
-                question:
-                  type: string
-                  example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
-                test_cases:
-                  type: object
-                  properties:
-                    public:
-                      type: array
-                      items:
+                questions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_num:
+                        type: integer
+                        example: 1
+                      test_cases:
                         type: object
                         properties:
-                          test_input:
-                            type: string
-                            example: "[1, 2, 3, 4]"
-                          expected_output:
-                            type: string
-                            example: "10"
-                          actual_output:
-                            type: string
-                            example: "10"
-                    private:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          test_input:
-                            type: string
-                            example: "[1, -2, 3, 1]"
-                          expected_output:
-                            type: string
-                            example: "3"
-                          actual_output:
-                            type: string
-                            example: "2"
-                submission:
-                  type: string
-                  example: |-
-                    def list_sum(a):
-                      return sum(set(a))
+                          public:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                test_input:
+                                  type: string
+                                  example: "[1, 2, 3, 4]"
+                                expected_output:
+                                  type: string
+                                  example: "10"
+                                actual_output:
+                                  type: string
+                                  example: "10"
+                          private:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                test_input:
+                                  type: string
+                                  example: "[1, -2, 3, 1]"
+                                expected_output:
+                                  type: string
+                                  example: "3"
+                                actual_output:
+                                  type: string
+                                  example: "2"
+                      code_submission:
+                        type: string
+                        example: |-
+                          def list_sum(a):
+                            return sum(set(a))
       responses:
         '200':
           description: Feedback for the assignment
@@ -1044,22 +1093,24 @@ paths:
                 type: object
                 properties:
                   feedback:
-                    type: object
-                    properties:
-                      question:
-                        type: string
-                        example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
-                      submission:
-                        type: string
-                        example: |-
-                          def list_sum(a):
-                            return sum(set(a))
-                      feedback:
-                        type: string
-                        example: "While trying to sum the elements, you are first converting the list to a set, which removes any duplicate elements"
-                      tip:
-                        type: string
-                        example: "Lists allow duplicate entries, while Sets (like the mathematical concept) do not"
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_num:
+                          type: integer
+                          example: 1
+                        code_submission:
+                          type: string
+                          example: |-
+                            def list_sum(a):
+                              return sum(set(a))
+                        feedback:
+                          type: string
+                          example: "While trying to sum the elements, you are first converting the list to a set, which removes any duplicate elements"
+                        tip:
+                          type: string
+                          example: "Lists allow duplicate entries, while Sets (like the mathematical concept) do not"
         '400':
           description: Invalid feedback request
         '404':
@@ -1085,12 +1136,9 @@ paths:
             schema:
               type: object
               properties:
-                assignment_type:
-                  type: string
-                  example: "programming"
-                question:
-                  type: string
-                  example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
+                question_num:
+                  type: integer
+                  example: 1
                 test_cases:
                   type: object
                   properties:
@@ -1507,34 +1555,42 @@ components:
         due_date:
           type: string
           example: "2024-10-10T23:59:59.000Z"
-        question:
-          type: string
-          example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
-        test_cases:
-          type: object
-          properties:
-            public:
-              type: array
-              items:
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question_num:
+                type: integer
+                example: 1
+              question:
+                type: string
+                example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
+              test_cases:
                 type: object
                 properties:
-                  test_input:
-                    type: string
-                    example: "[1, 2, 3, 4]"
-                  expected_output:
-                    type: string
-                    example: "10"
-            private:
-              type: array
-              items:
-                type: object
-                properties:
-                  test_input:
-                    type: string
-                    example: "[1, -2, 3, -4]"
-                  expected_output:
-                    type: string
-                    example: "-2"
+                  public:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_input:
+                          type: string
+                          example: "[1, 2, 3, 4]"
+                        expected_output:
+                          type: string
+                          example: "10"
+                  private:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_input:
+                          type: string
+                          example: "[1, -2, 3, -4]"
+                        expected_output:
+                          type: string
+                          example: "-2"
     
     GA:
       type: object
@@ -1592,31 +1648,39 @@ components:
         due_date:
           type: string
           example: "2024-10-10T23:59:59.000Z"
-        question:
-          type: string
-          example: "Define a function list_product() that takes a list of integers as input and returns the product"
-        test_cases:
-          type: object
-          properties:
-            public:
-              type: array
-              items:
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question_num:
+                type: integer
+                example: 1
+              question:
+                type: string
+                example: "Define a function list_product() that takes a list of integers as input and returns the product"
+              test_cases:
                 type: object
                 properties:
-                  test_input:
-                    type: string
-                    example: "[1, 2, 3, 4]"
-                  expected_output:
-                    type: string
-                    example: "24"
-            private:
-              type: array
-              items:
-                type: object
-                properties:
-                  test_input:
-                    type: string
-                    example: "[1, -2, 3, -4]"
-                  expected_output:
-                    type: string
-                    example: "24"
+                  public:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_input:
+                          type: string
+                          example: "[1, 2, 3, 4]"
+                        expected_output:
+                          type: string
+                          example: "24"
+                  private:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_input:
+                          type: string
+                          example: "[1, -2, 3, -4]"
+                        expected_output:
+                          type: string
+                          example: "24"
