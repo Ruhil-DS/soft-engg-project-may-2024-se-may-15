@@ -1,14 +1,77 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: Seek++
-  description: This file provides a list of all the endpoints that are available in the Seek++ API.
+  title: Seek++ Portal API — Team 15
+  description: >-
+    <h2>Software Engineering Project (BSCS3001)</h2>
+
+    <h2>Milestone 4 — API Endpoints</h2>
+
+
+    Submitted by **Team 15**
+
+    - **Niharika Girdhar** (21f1001715)
+
+    - **Zahabiyah Ghadiali** (21f1004235)
+
+    - **Anirudha Anekal** (21f1005685)
+
+    - **Ganesh P** (21f1006171)
+
+    - **Laxman Bafna** (21f2000485)
+
+    - **Pushpak Ruhil** (21f2001180)
+
+    - **Lalit Kumar** (21f3001013)
+
+    - **Archit Handa** 
+
+
+    <p>
+      <em>
+        <strong>IITM BS Degree Program</strong></br>
+        Indian Institute of Technology, Madras, Chennai,</br>
+        Tamil Nadu, India - 600036
+      </em>
+    </p>
+
+    <hr>
+
+
+    The _**Seek++ Portal API**_ aims to list all the endpoints based on the user
+    stories developed in the previous milestones. This RESTful API includes
+    endpoints for _user authentication_, _GenAI integration_ for course
+    content-related functionalities and assignment-specific operations.
+
+
+    This will serve as a checklist for the backend developers to code the
+    essential functionalities, as well as aid the frontend developer by being a
+    guiding template for her/him to make the desired request and communicate
+    appropriately and effectively with the backend.
+    
   version: 1.0.0
+  
+servers:
+- url: https://127.0.0.1:5000/api/v1
+  description: LocalHost
+  
+tags:
+  - name: "User Authentication"
+    description: Endpoints to allow a user to register and login
+  - name: "Course Component"
+    description: Endpoints related to accessing courses, modules, and lessons
+  - name: "Assignment Component"
+    description: Endpoints related to accessing, generating, and submitting assignments
+  - name: "GenAI Components"
+    description: Endpoints related to GenAI components
 
 paths:
-
-  /api/login/:
+  # User Authentication Endpoints
+  /register:
     post:
-      summary: User login
+      tags:
+        - "User Authentication"
+      summary: User Registration
+      description: Allow a user to register using a username, email, and password
       requestBody:
         required: true
         content:
@@ -18,107 +81,39 @@ paths:
               properties:
                 username:
                   type: string
+                  example: user1
+                email:
+                  type: string
+                  example: user1@email.com
                 password:
                   type: string
+                  example: password
               required:
                 - username
+                - email
                 - password
       responses:
-        200:
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-
-  /api/register/:
-    post:
-      summary: User registration
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-              required:
-                - username
-                - password
-      responses:
-        200:
+        '200':
           description: Registration successful
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  token:
+                  message:
                     type: string
-
-  /api/summary/video/{week_num}/{lecture_num}:
-    get:
-      summary: Get video lecture summary
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-        - in: path
-          name: lecture_num
-          schema:
-            type: integer
-          required: true
-          description: Lecture number
-      responses:
-        200:
-          description: Video summary retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  summary:
-                    type: string
-
-  /api/summary/slides/{week_num}/{lecture_num}:
-    get:
-      summary: Get slides lecture summary
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-        - in: path
-          name: lecture_num
-          schema:
-            type: integer
-          required: true
-          description: Lecture number
-      responses:
-        200:
-          description: Slides summary retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  summary:
-                    type: string
-
-  /api/translate/:
+                    example: user registered
+        '400':
+          description: All user credentials are required
+        '409':
+          description: User already exists
+  
+  /login:
     post:
-      summary: Translate text
+      tags:
+      - "User Authentication"
+      summary: User Login
+      description: Allow a user to login using email and password
       requestBody:
         required: true
         content:
@@ -126,456 +121,204 @@ paths:
             schema:
               type: object
               properties:
-                text:
+                email:
                   type: string
-                language:
+                  example: user1@email.com
+                password:
                   type: string
+                  example: password
               required:
-                - text
-                - language
+                - email
+                - password
       responses:
-        200:
-          description: Text translated
+        '200':
+          description: Login successful
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  translation:
+                  message:
                     type: string
-
-  /api/assignment/generate/theory/{week_num}/:
-    post:
-      summary: Generate theory questions
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-      responses:
-        200:
-          description: Theory questions generated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  assignment:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        question:
-                          type: string
-                        options:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              option_num:
-                                type: integer
-                              option:
-                                type: string
-                        correct_option:
-                          type: integer
+                    example: user logged in
+        '400':
+          description: All user credentials are required
+        '401':
+          description: Invalid username or password
+        '404':
+          description: User not found
+  
+  # Course Component Endpoints
+  /courses:
     get:
-      summary: Get previously generated theory questions
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
+      tags:
+      - "Course Component"
+      summary: Get a list of courses
+      description: Get a list of all courses with details
       responses:
-        200:
-          description: Previously generated theory questions retrieved
+        '200':
+          description: List of courses
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  assignment:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        question:
-                          type: string
-                        options:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              option_num:
-                                type: integer
-                              option:
-                                type: string
-                        correct_option:
-                          type: integer
-
-  /api/assignment/generate/programming/{week_num}/:
-    post:
-      summary: Generate programming questions
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-      responses:
-        200:
-          description: Programming questions generated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  assignment:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        question:
-                          type: string
-                        test_cases:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              test_case_num:
-                                type: integer
-                              input:
-                                type: string
-                              output:
-                                type: string
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Course'
+  
+  /courses/{course_id}:
     get:
-      summary: Get previously generated programming questions
+      tags:
+      - "Course Component"
+      summary: Get details of a specific course
+      description: Get details of a specific course given the course id
       parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
+        - name: course_id
+          in: path
           required: true
-          description: Week number
-      responses:
-        200:
-          description: Previously generated programming questions retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  assignment:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        question:
-                          type: string
-                        test_cases:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              test_case_num:
-                                type: integer
-                              input:
-                                type: string
-                              output:
-                                type: string
-
-  /api/assignment/submit/theory/{week_num}/:
-    post:
-      summary: Submit answers for theory assignment
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                answer:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      question_num:
-                        type: integer
-                      answer:
-                        type: integer
-      responses:
-        200:
-          description: Theory assignment submitted and score returned
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  score:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        correct:
-                          type: boolean
-
-  /api/assignment/submit/programming/{week_num}/{question_num}/:
-    post:
-      summary: Submit programming assignment solution
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-        - in: path
-          name: question_num
-          schema:
-            type: integer
-          required: true
-          description: Question number
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                answer:
-                  type: string
-      responses:
-        200:
-          description: Programming assignment submitted and score returned
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  score:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        public_test_cases:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              test_case_number:
-                                type: integer
-                              passed:
-                                type: boolean
-
-  /api/assignment/GA/{week_num}/:
-    get:
-      summary: Get GA questions
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-      responses:
-        200:
-          description: GA questions retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  assignment:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        question:
-                          type: string
-                        options:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              option_num:
-                                type: integer
-                              option:
-                                type: string
-                        correct_option:
-                          type: integer
-
-  /api/assignment/GrPA/{week_num}/:
-    get:
-      summary: Get GrPA questions
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-      responses:
-        200:
-          description: GrPA questions retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  assignment:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        question:
-                          type: string
-                        test_cases:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              test_case_num:
-                                type: integer
-                              input:
-                                type: string
-                              output:
-                                type: string
-
-  /api/assignment/submit/GA/{week_num}/:
-    post:
-      summary: Submit answers for GA assignment
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                answer:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      question_num:
-                        type: integer
-                      answer:
-                        type: integer
-      responses:
-        200:
-          description: GA assignment submitted and score returned
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  score:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question_num:
-                          type: integer
-                        correct:
-                          type: boolean
-
-  /api/assignment/submit/GrPA/{week_num}/{question_num}/:
-    post:
-      summary: Submit GrPA assignment solution
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-        - in: path
-          name: question_num
-          schema:
-            type: integer
-          required: true
-          description: Question number
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                answer:
-                  type: string
-      responses:
-        200:
-          description: GrPA assignment submitted and score returned
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  score:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        public_test_cases:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              test_case_number:
-                                type: integer
-                              passed:
-                                type: boolean
-                        private_test_case:
-                          type: string
-
-  /api/assignment/feedback/{assignment_type}/{week_num}/:
-    post:
-      summary: Get feedback for assignment
-      parameters:
-        - in: path
-          name: assignment_type
           schema:
             type: string
+            example: "BSCS1002"
+      responses:
+        '200':
+          description: Details of a specific course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '404':
+          description: Course not found
+          
+  /courses/{course_id}/modules:
+    get:
+      tags:
+      - "Course Component"
+      summary: Get a list of modules
+      description: Get a list of modules for a specific course
+      parameters:
+        - name: course_id
+          in: path
           required: true
-          description: Assignment type
-        - in: path
-          name: week_num
+          schema:
+            type: string
+            example: "BSCS1002"
+      responses:
+        '200':
+          description: List of modules
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  course_id:
+                    type: string
+                    example: "BSCS1002"
+                  modules:
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/Module'
+        '404':
+          description: Modules not found
+                      
+  /courses/{course_id}/modules/{module_id}/lessons:
+    get:
+      tags:
+      - "Course Component"
+      summary: Get a list of lessons
+      description: Get a list of lessons for a specific course module given the course and module id
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "BSCS1002"
+        - name: module_id
+          in: path
+          required: true
           schema:
             type: integer
+            example: 6
+      responses:
+        '200':
+          description: List of lessons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  course_id:
+                    type: string
+                    example: "BSCS1002"
+                  module_id:
+                    type: integer
+                    example: 6
+                  lessons:
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/Lesson'
+        '404':
+          description: Lessons not found
+  
+  # Assignment Component Endpoints
+  /assignment/practice/theory/{module_id}:
+    get:
+      tags:
+      - "Assignment Component"
+      summary: Get the theoretical practice assignment (PA)
+      description: Get the theoretical practice assignment (PA) for a given module
+      parameters:
+        - name: module_id
+          in: path
           required: true
-          description: Week number
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '200':
+          description: PA for the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PA'
+        '404':
+          description: Assignment not found
+
+  /assignment/practice/theory/{module_id}/generate:
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Generate the theoretical practice assignment (PA)
+      description: Generate the theoretical practice assignment (PA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '201':
+          description: Generated PA for the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PA'
+        '404':
+          description: Assignment not found
+
+  /assignment/practice/theory/{module_id}/submit:
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Submit the theoretical practice assignment (PA)
+      description: Submit the theoretical practice assignment (PA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
       requestBody:
         required: true
         content:
@@ -583,18 +326,615 @@ paths:
             schema:
               type: object
               properties:
-                answers:
+                module_id:
+                  type: integer
+                  example: 6
+                assignment_type:
+                  type: string
+                  example: "theory"
+                assessment_type:
+                  type: string
+                  example: "practice"
+                due_date:
+                  type: string
+                  example: "2024-10-10T23:59:59.000Z"
+                submission_date:
+                  type: string
+                  example: "2024-10-09T10:30:00.000Z"
+                submission:
+                  type: array
+                  items:
+                    type: integer
+                    example: 1
+      responses:
+        '201':
+          description: Successful submission of PA
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully submitted assignment"
+                  grade:
+                    type: string
+                    example: "1/1"
+                  submission:
+                    type: array
+                    items:
+                      type: integer
+                      example: 1
+                  correct_options:
+                    type: array
+                    items:
+                      type: integer
+                      example: 1
+        '400':
+          description: Invalid submission
+        '404':
+          description: Assignment not found
+
+  /assignment/practice/programming/{module_id}:
+    get:
+      tags:
+      - "Assignment Component"
+      summary: Get the programming practice assignment (PrPA)
+      description: Get the programming practice assignment (PrPA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '200':
+          description: PrPA for the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrPA'
+        '404':
+          description: Assignment not found
+
+  /assignment/practice/programming/{module_id}/generate:
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Generate the programming practice assignment (PrPA)
+      description: Generate the programming practice assignment (PrPA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '201':
+          description: Generated PrPA for the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrPA'
+        '404':
+          description: Assignment not found
+
+  /assignment/practice/programming/{module_id}/submit:
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Submit the programming practice assignment (PrPA)
+      description: Submit the programming practice assignment (PrPA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                module_id:
+                  type: integer
+                  example: 6
+                assignment_type:
+                  type: string
+                  example: "programming"
+                assessment_type:
+                  type: string
+                  example: "practice"
+                due_date:
+                  type: string
+                  example: "2024-10-10T23:59:59.000Z"
+                submission_date:
+                  type: string
+                  example: "2024-10-09T10:30:00.000Z"
+                submission:
+                  type: string
+                  example: |-
+                    def list_sum(a):
+                      sum = 0
+                      for i in a:
+                        sum += i
+                      return sum
+      responses:
+        '201':
+          description: Successful submission of PrPA
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully submitted assignment"
+                  submission:
+                    type: string
+                    example: |-
+                      def list_sum(a):
+                        sum = 0
+                        for i in a:
+                          sum += i
+                        return sum
+                  test_cases:
+                    type: object
+                    properties:
+                      public:
+                        type: object
+                        properties:
+                          grade:
+                            type: string
+                            example: "1/1"
+                          expected_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "10"
+                          actual_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "10"
+                      private:
+                        type: object
+                        properties:
+                          grade:
+                            type: string
+                            example: "1/1"
+                          expected_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "-2"
+                          actual_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "-2"
+        '400':
+          description: Invalid submission
+        '404':
+          description: Assignment not found
+
+  /assignment/graded/theory/{module_id}:
+    get:
+      tags:
+      - "Assignment Component"
+      summary: Get the theoretical graded assignment (GA)
+      description: Get the theoretical graded assignment (GA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '200':
+          description: GA for the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GA'
+        '404':
+          description: Assignment not found
+    
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Create the theoretical graded assignment (GA)
+      description: Create the theoretical graded assignment (GA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GA'
+      responses:
+        '201':
+          description: Assignment successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Assignment successfully created"
+        '400':
+          description: Invalid assignment
+        '404':
+          description: Assignment not found
+
+  /assignment/graded/theory/{module_id}/submit:
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Submit the theoretical graded assignment (GA)
+      description: Submit the theoretical graded assignment (GA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                module_id:
+                  type: integer
+                  example: 6
+                assignment_type:
+                  type: string
+                  example: "theory"
+                assessment_type:
+                  type: string
+                  example: "graded"
+                due_date:
+                  type: string
+                  example: "2024-10-10T23:59:59.000Z"
+                submission_date:
+                  type: string
+                  example: "2024-10-09T10:30:00.000Z"
+                submission:
+                  type: array
+                  items:
+                    type: integer
+                    example: 1
+      responses:
+        '201':
+          description: Successful submission of GA
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully submitted assignment"
+                  grade:
+                    type: string
+                    example: "1/1"
+                  submission:
+                    type: array
+                    items:
+                      type: integer
+                      example: 1
+                  correct_options:
+                    type: array
+                    items:
+                      type: integer
+                      example: 1
+        '400':
+          description: Invalid submission
+        '404':
+          description: Assignment not found
+
+  /assignment/graded/programming/{module_id}:
+    get:
+      tags:
+      - "Assignment Component"
+      summary: Get the programming graded assignment (GrPA)
+      description: Get the programming graded assignment (GrPA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '200':
+          description: GrPA for the module
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrPA'
+        '404':
+          description: Assignment not found
+    
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Create the programming graded assignment (GrPA)
+      description: Create the programming graded assignment (GrPA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrPA'
+      responses:
+        '201':
+          description: Assignment successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Assignment successfully created"
+        '400':
+          description: Invalid assignment
+        '404':
+          description: Assignment not found
+
+  /assignment/graded/programming/{module_id}/submit:
+    post:
+      tags:
+      - "Assignment Component"
+      summary: Submit the programming graded assignment (GrPA)
+      description: Submit the programming graded assignment (GrPA) for a given module
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                module_id:
+                  type: integer
+                  example: 6
+                assignment_type:
+                  type: string
+                  example: "programming"
+                assessment_type:
+                  type: string
+                  example: "graded"
+                due_date:
+                  type: string
+                  example: "2024-10-10T23:59:59.000Z"
+                submission_date:
+                  type: string
+                  example: "2024-10-09T10:30:00.000Z"
+                submission:
+                  type: string
+                  example: |-
+                    def list_product(a):
+                      product = 1
+                      for i in a:
+                        product *= i
+                      return product
+      responses:
+        '201':
+          description: Successful submission of GrPA
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully submitted assignment"
+                  submission:
+                    type: string
+                    example: |-
+                      def list_product(a):
+                        product = 1
+                        for i in a:
+                          product *= i
+                        return product
+                  test_cases:
+                    type: object
+                    properties:
+                      public:
+                        type: object
+                        properties:
+                          grade:
+                            type: string
+                            example: "1/1"
+                          expected_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "24"
+                          actual_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "24"
+                      private:
+                        type: object
+                        properties:
+                          grade:
+                            type: string
+                            example: "1/1"
+                          expected_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "24"
+                          actual_output:
+                            type: array
+                            items:
+                              type: string
+                              example: "24"
+        '400':
+          description: Invalid submission
+        '404':
+          description: Assignment not found
+  
+  # GenAI Component Endpoints
+  /assignment/graded/programming/{module_id}/generate-test-cases:
+    post:
+      tags:
+      - "GenAI Components"
+      summary: Generate test cases for GrPA
+      description: Generate public and private test cases for a GrPA
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  example: "Define a function list_product() that takes a list of integers as input and returns the product"
+                num_public_test_cases:
+                  type: integer
+                  example: 1
+                num_private_test_cases:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: GrPA for the module
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  question:
+                    type: string
+                    example: "Define a function list_product() that takes a list of integers as input and returns the product"
+                  public:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_input:
+                          type: string
+                          example: "[1, 2, 3, 4]"
+                        expected_output:
+                          type: string
+                          example: "24"
+                  private:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        test_input:
+                          type: string
+                          example: "[1, -2, 3, -4]"
+                        expected_output:
+                          type: string
+                          example: "24"
+        '400':
+          description: Invalid test case generation request
+        '404':
+          description: Assignment not found
+
+  /assignment/{assessment_type}/theory/{module_id}/generate-feedback:
+    post:
+      tags:
+      - "GenAI Components"
+      summary: Get feedback for a theory assignment (PA or GA)
+      description: Get feedback for a theory assignment (PA or GA) after submission
+      parameters:
+        - name: assessment_type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - "practice"
+              - "graded"
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assignment_type:
+                  type: string
+                  example: "theory"
+                questions:
                   type: array
                   items:
                     type: object
                     properties:
-                      question_id:
+                      question:
                         type: string
-                      answer:
+                        example: "Which of the following is an example of a list?"
+                      options:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            option_num:
+                              type: integer
+                              example: 1
+                            option:
+                              type: string
+                              example: "[1, 2, 3]"
+                      correct_option_num:
                         type: integer
+                        example: 1
+                      submitted_option_num:
+                        type: integer
+                        example: 1
       responses:
-        200:
-          description: Feedback for assignment
+        '200':
+          description: Feedback for the assignment
           content:
             application/json:
               schema:
@@ -605,67 +945,47 @@ paths:
                     items:
                       type: object
                       properties:
-                        question_id:
+                        question:
                           type: string
-                        correct:
-                          type: boolean
+                          example: "Which of the following is an example of a list?"
+                        correct_option_num:
+                          type: integer
+                          example: 1
+                        submitted_option_num:
+                          type: integer
+                          example: 1
                         feedback:
                           type: string
-                        suggestions:
+                          example: "You have got the answer correct: [1, 2, 3] is an example of a list"
+                        tip:
                           type: string
+                          example: "Lists in python are a collection of variables or values enclosed in square brackets '[]'"
+        '400':
+          description: Invalid feedback request
+        '404':
+          description: Assignment not found
 
-  /api/assignment/suggestion/{assignment_type}/{week_num}/{question_num}/:
-    get:
-      summary: Get suggestions for programming question
+  /assignment/{assessment_type}/programming/{module_id}/generate-feedback:
+    post:
+      tags:
+      - "GenAI Components"
+      summary: Get feedback for a programming assignment (PrPA or GrPA)
+      description: Get feedback for a programming assignment (PrPA or GrPA) after submission
       parameters:
-        - in: path
-          name: assignment_type
+        - name: assessment_type
+          in: path
+          required: true
           schema:
             type: string
+            enum:
+              - "practice"
+              - "graded"
+        - name: module_id
+          in: path
           required: true
-          description: Assignment type
-        - in: path
-          name: week_num
           schema:
             type: integer
-          required: true
-          description: Week number
-        - in: path
-          name: question_num
-          schema:
-            type: integer
-          required: true
-          description: Question number
-      responses:
-        200:
-          description: Suggestions retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  suggestions:
-                    type: string
-
-  /api/pain_point/:
-    get:
-      summary: Get pain points and revision plan
-      responses:
-        200:
-          description: Pain points and revision plan retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  pain_points:
-                    type: string
-                  revision_plan:
-                    type: string
-
-  /api/transcript_to_code/:
-    post:
-      summary: Convert transcript to code
+            example: 6
       requestBody:
         required: true
         content:
@@ -673,22 +993,390 @@ paths:
             schema:
               type: object
               properties:
-                transcript:
+                assignment_type:
                   type: string
+                  example: "programming"
+                question:
+                  type: string
+                  example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
+                test_cases:
+                  type: object
+                  properties:
+                    public:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          test_input:
+                            type: string
+                            example: "[1, 2, 3, 4]"
+                          expected_output:
+                            type: string
+                            example: "10"
+                          actual_output:
+                            type: string
+                            example: "10"
+                    private:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          test_input:
+                            type: string
+                            example: "[1, -2, 3, 1]"
+                          expected_output:
+                            type: string
+                            example: "3"
+                          actual_output:
+                            type: string
+                            example: "2"
+                submission:
+                  type: string
+                  example: |-
+                    def list_sum(a):
+                      return sum(set(a))
       responses:
-        200:
-          description: Transcript converted to code
+        '200':
+          description: Feedback for the assignment
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  code:
-                    type: string
-
-  /api/chatbot/query/:
+                  feedback:
+                    type: object
+                    properties:
+                      question:
+                        type: string
+                        example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
+                      submission:
+                        type: string
+                        example: |-
+                          def list_sum(a):
+                            return sum(set(a))
+                      feedback:
+                        type: string
+                        example: "While trying to sum the elements, you are first converting the list to a set, which removes any duplicate elements"
+                      tip:
+                        type: string
+                        example: "Lists allow duplicate entries, while Sets (like the mathematical concept) do not"
+        '400':
+          description: Invalid feedback request
+        '404':
+          description: Assignment not found
+  
+  /assignment/practice/programming/{module_id}/code-help:
     post:
-      summary: Query chatbot
+      tags:
+      - "GenAI Components"
+      summary: Get coding assistance for a practice programming assignment (PrPA only)
+      description: Get coding assitance while attempting a practice programming assignment (PrPA only)
+      parameters:
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assignment_type:
+                  type: string
+                  example: "programming"
+                question:
+                  type: string
+                  example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
+                test_cases:
+                  type: object
+                  properties:
+                    public:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          test_input:
+                            type: string
+                            example: "[1, 2, 3, 4]"
+                          expected_output:
+                            type: string
+                            example: "10"
+                    private:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          test_input:
+                            type: string
+                            example: "[1, -2, 3, 1]"
+                          expected_output:
+                            type: string
+                            example: "3"
+                student_code:
+                  type: string
+                  example: |-
+                    def list_sum(a):
+                      b = set(a)
+                      print(sum(b))
+      responses:
+        '200':
+          description: Coding suggestion for the assignment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  question:
+                    type: string
+                    example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
+                  student_code:
+                    type: string
+                    example: |-
+                      def list_sum(a):
+                        b = set(a)
+                        print(sum(b))
+                  code_help:
+                    type: string
+                    example: "Find a way to access each element and accumulate the results. Also, the question asks to return the sum, while your code is printing it and not returning anything."
+        '400':
+          description: Invalid coding help request
+        '404':
+          description: Assignment not found
+
+  /courses/{course_id}/modules/{module_id}/lessons/{lesson_id}/generate-summary/video:
+    get:
+      tags:
+      - "GenAI Components"
+      summary: Generate video summary for a lesson
+      description: Generate video summary for a given lesson
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "BSCS1002"
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+        - name: lesson_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Video summary for the lesson
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: string
+                    example: "In this video, professor discusses about the list data structure, how to create it, and its basic functions..."
+                  key_points:
+                    type: array
+                    items:
+                      type: string
+                      example: "l.append(e) - appends element e at the end of list l"
+        '404':
+          description: Lesson not found
+
+  /courses/{course_id}/modules/{module_id}/lessons/{lesson_id}/generate-summary/slide:
+    get:
+      tags:
+      - "GenAI Components"
+      summary: Generate slide summary for a lesson
+      description: Generate slide summary for a given lesson
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "BSCS1002"
+        - name: module_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 6
+        - name: lesson_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Slide summary for the lesson
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: string
+                    example: "The slide deck begins with an introduction to the list data structure, how to create it, and its basic functions..."
+                  key_points:
+                    type: array
+                    items:
+                      type: string
+                      example: "l.append(e) - appends element e at the end of list l"
+        '404':
+          description: Lesson not found
+
+  /translate:
+    post:
+      tags:
+      - "GenAI Components"
+      summary: Generate translation for text
+      description: Generate translation for a piece of text given the desired language
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                source_text:
+                  type: string
+                  example: "The slide deck begins with an introduction to the list data structure, how to create it, and its basic functions..."
+                target_language:
+                  type: string
+                  example: "Hindi"
+      responses:
+        '200':
+          description: Translated text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  source_text:
+                    type: string
+                    example: "The slide deck begins with an introduction to the list data structure, how to create it, and its basic functions..."
+                  target_language:
+                    type: string
+                    example: "Hindi"
+                  translated_text:
+                    type: string
+                    example: "स्लाइड डेक की शुरुआत सूची डेटा संरचना की परिचय से होती है, इसे कैसे बनाया जाता है, और इसके मूल कार्य क्या हैं..."
+        '400':
+          description: Invalid translation request
+
+  /transcript-to-code:
+    post:
+      tags:
+      - "GenAI Components"
+      summary: Convert transcript to code for Speech-to-Code functionality
+      description: Convert a textual natural language transcript into formatted code for the Speech-to-Code functionality
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                audio_transcript:
+                  type: string
+                  example: "def list sum a next line sum is equal to 0 next line for i in a next line sum plus equals i next line return sum"
+                coding_language:
+                  type: string
+                  example: "Python"
+      responses:
+        '200':
+          description: Formatted code from transcript
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audio_transcript:
+                    type: string
+                    example: "def list underscore sum a next line sum is equal to 0 next line for i in a next line sum plus equals i next line return sum"
+                  coding_language:
+                    type: string
+                    example: "Python"
+                  formatted_code:
+                    type: string
+                    example: |-
+                      def list_sum(a):
+                        sum = 0
+                        for i in a:
+                          sum += i
+                        return sum
+        '400':
+          description: Invalid transcript-to-code request
+
+  /detect-pain-points:
+    get:
+      tags:
+      - "GenAI Components"
+      summary: Detect learning pain points for a student
+      description: Detect learning pain points for a student based on performace in assignments and suggest a revision plan
+      responses:
+        '200':
+          description: Learning pain points with a revision plan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pain_points:
+                    type: array
+                    items:
+                      type: string
+                      example: "Dictionaries"
+                  revision_plan:
+                    type: string
+                    example: "Start by understanding how dictionaries are implemented as a key-value pairs..."
+
+  /chatbot/train:
+    post:
+      tags:
+      - "GenAI Components"
+      summary: Update the knowledge base of the chatbot
+      description: Update the knowledge base of the chatbot to answer learner's query better
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_knowledge:
+                  type: string
+                  example: "Deadline for GrPA 8 has been extended to 8 Dec 2024, which is beyond the Quiz 2 date. However, Syllabus for Quiz 2 is still from weeks 1 to 8."
+      responses:
+        '201':
+          description: Successful update of chatbot knowledge base
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Chatbot knowledge base updated successfully"
+        '400':
+          description: Invalid knowledge base update request
+
+  /chatbot/query:
+    post:
+      tags:
+      - "GenAI Components"
+      summary: Query the chatbot
+      description: Query the chatbot for any form of course assistance
       requestBody:
         required: true
         content:
@@ -698,60 +1386,237 @@ paths:
               properties:
                 query:
                   type: string
+                  example: "What is the deadline for GrPA 8?"
       responses:
-        200:
-          description: Chatbot response
+        '200':
+          description: Response to query from chatbot
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  answer:
+                  query:
                     type: string
+                    example: "What is the deadline for GrPA 8?"
+                  response:
+                    type: string
+                    example: "The deadline for GrPA 8 has been extended to 8 December 2024, but Quiz 2 (conducted on 1 December 2024) will cover topics of week 8. It is recommended to complete the related assignments before the quiz."
+        '400':
+          description: Invalid chatbot query
 
-  /api/assignment/{week_num}/{question_num}/:
-    get:
-      summary: Get test cases for instructors
-      parameters:
-        - in: path
-          name: week_num
-          schema:
-            type: integer
-          required: true
-          description: Week number
-        - in: path
-          name: question_num
-          schema:
-            type: integer
-          required: true
-          description: Question number
-      responses:
-        200:
-          description: Test cases retrieved
-          content:
-            application/json:
-              schema:
+components:
+  schemas:
+    Course:
+      type: object
+      properties:
+        course_id: 
+          type: string
+          example: "BSCS1002"
+        course_title:
+          type: string
+          example: "Programming in Python"
+        course_description:
+          type: string
+          example: "This course aims to teach Python programming language while helping students get an algorithmic flavour."
+          
+    Module:
+      type: object
+      properties:
+        module_id:
+          type: integer
+          example: 6
+        module_title:
+          type: string
+          example: "Week 6 - Lists, Sets, Tuples, and Dictionaries"
+        
+    Lesson:
+      type: object
+      properties:
+        lesson_id:
+          type: integer
+          example: 1
+        lesson_title:
+          type: string
+          example: "Introduction to Lists"
+        content:
+          type: object
+          properties:
+            content:
+              type: string
+              example: "Lists are the most basic data structures in Python."
+            video_url:
+              type: string
+              example: "https://www.video.com/module-6/lecture-1"
+            slide_url:
+              type: string
+              example: "https://www.slide.com/module-6/lecture-1"
+    
+    PA:
+      type: object
+      properties:
+        module_id:
+          type: integer
+          example: 6
+        assignment_type:
+          type: string
+          example: "theory"
+        assessment_type:
+          type: string
+          example: "practice"
+        due_date:
+          type: string
+          example: "2024-10-10T23:59:59.000Z"
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question_num:
+                type: integer
+                example: 1
+              question:
+                type: string
+                example: "Which of the following is an example of a list?"
+              options:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    option_num:
+                      type: integer
+                      example: 1
+                    option:
+                      type: string
+                      example: "[1, 2, 3]"
+              correct_option_num:
+                type: integer
+                example: 1
+    
+    PrPA:
+      type: object
+      properties:
+        module_id:
+          type: integer
+          example: 6
+        assignment_type:
+          type: string
+          example: "programming"
+        assessment_type:
+          type: string
+          example: "practice"
+        due_date:
+          type: string
+          example: "2024-10-10T23:59:59.000Z"
+        question:
+          type: string
+          example: "Define a function list_sum() that takes a list of integers as input and returns the sum"
+        test_cases:
+          type: object
+          properties:
+            public:
+              type: array
+              items:
                 type: object
                 properties:
-                  public_test_cases:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        test_case_id:
-                          type: integer
-                        input:
-                          type: string
-                        output:
-                          type: string
-                  private_test_cases:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        test_case_id:
-                          type: integer
-                        input:
-                          type: string
-                        output:
-                          type: string
+                  test_input:
+                    type: string
+                    example: "[1, 2, 3, 4]"
+                  expected_output:
+                    type: string
+                    example: "10"
+            private:
+              type: array
+              items:
+                type: object
+                properties:
+                  test_input:
+                    type: string
+                    example: "[1, -2, 3, -4]"
+                  expected_output:
+                    type: string
+                    example: "-2"
+    
+    GA:
+      type: object
+      properties:
+        module_id:
+          type: integer
+          example: 6
+        assignment_type:
+          type: string
+          example: "theory"
+        assessment_type:
+          type: string
+          example: "graded"
+        due_date:
+          type: string
+          example: "2024-10-10T23:59:59.000Z"
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question_num:
+                type: integer
+                example: 1
+              question:
+                type: string
+                example: "Which of the following is an example of a set?"
+              options:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    option_num:
+                      type: integer
+                      example: 1
+                    option:
+                      type: string
+                      example: "{1, 2, 3}"
+              correct_option_num:
+                type: integer
+                example: 1
+    
+    GrPA:
+      type: object
+      properties:
+        module_id:
+          type: integer
+          example: 6
+        assignment_type:
+          type: string
+          example: "programming"
+        assessment_type:
+          type: string
+          example: "graded"
+        due_date:
+          type: string
+          example: "2024-10-10T23:59:59.000Z"
+        question:
+          type: string
+          example: "Define a function list_product() that takes a list of integers as input and returns the product"
+        test_cases:
+          type: object
+          properties:
+            public:
+              type: array
+              items:
+                type: object
+                properties:
+                  test_input:
+                    type: string
+                    example: "[1, 2, 3, 4]"
+                  expected_output:
+                    type: string
+                    example: "24"
+            private:
+              type: array
+              items:
+                type: object
+                properties:
+                  test_input:
+                    type: string
+                    example: "[1, -2, 3, -4]"
+                  expected_output:
+                    type: string
+                    example: "24"
