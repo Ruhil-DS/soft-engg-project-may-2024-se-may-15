@@ -13,19 +13,23 @@ router.beforeEach((to, from, next) => {
 
 export default {
   name: 'App',
+
   data() {
     return {
       rerender: true
     }
   },
+
   components: {
     Navbar
   },
+
   watch: {
         $route(to, from) {
             this.rerender = !this.rerender;
         }
   },
+
   router
 }
 </script>

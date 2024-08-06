@@ -35,7 +35,7 @@ export default {
                 <div class="navbar-nav">
                     <router-link class="nav-link" to="/">Home</router-link>
 
-                    <router-link class="nav-link" to="/users" v-if="role === 'admin'">All Users</router-link>
+                    <!-- <router-link class="nav-link" to="/users" v-if="role === 'admin'">All Users</router-link>
 
                     <router-link class="nav-link" to="/create-category"
                         v-if="role === 'admin' || role === 'store_manager'">Create Category</router-link>
@@ -52,7 +52,7 @@ export default {
                     <router-link class="nav-link" to="/orders" v-if="role === 'user'">Orders</router-link>
 
                     <router-link class="nav-link" to="/stats" v-if="role === 'store_manager'">Data and
-                        Statistics</router-link>
+                        Statistics</router-link> -->
 
                     <a class="nav-link" href="#" v-if="isLoggedIn" @click="logout()">Log out</a>
                 </div>
