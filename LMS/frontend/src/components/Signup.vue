@@ -6,7 +6,7 @@ export default {
                 username: null,
                 email: null,
                 password: null,
-                role: 'user'
+                role: 'student'
             },
             error: null
         }
@@ -14,7 +14,7 @@ export default {
 
     methods: {
         async signup() {
-            const response = await fetch('/user-signup', {
+            const response = await fetch('http://127.0.0.1:5000/api/v1/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
