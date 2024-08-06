@@ -29,3 +29,9 @@ coverage
 
 *.tsbuildinfo
 /LMS/frontend/.vscode/
+
+/LMS/backend/.venv/
+/LMS/backend/__pycache__
+
+# TODO: Remove the following later while submission
+/LMS/backend/instance/
