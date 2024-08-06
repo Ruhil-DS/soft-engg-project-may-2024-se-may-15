@@ -7,7 +7,7 @@ def llm_model(prompt: str) -> str:
 
 
 # This is a placeholder for the video_summery function. It should be replaced with the actual function.
-def video_summery(lecture_num: int, week_num: int) -> str:
+def video_summary(lecture_num: int, week_num: int) -> str:
     data = database_func(lecture_num, week_num)
     summary: str = llm_model(data)
     return "Scaffolding from video_summery function" + summary

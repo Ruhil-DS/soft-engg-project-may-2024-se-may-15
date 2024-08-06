@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+import enum
 from sqlalchemy import Enum
 from flask_security import UserMixin, RoleMixin
 
@@ -17,6 +18,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(20), nullable=False)
+    active = db.Column(db.Boolean(), default=True)
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     roles = db.relationship('Role', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
 
@@ -63,7 +65,7 @@ class Note(db.Model):
     note = db.Column(db.Text, nullable=False)
 
 # Enumerator for Assignment Types
-class AssignmentType(Enum):
+class AssignmentType(enum.Enum):
     PA = 'pa'       # Practice Assignment (PA)
     GA = 'ga'       # Graded Assignment (GA)
     PrPA = 'prpa'   # Practice Programming Assignment (PrPA)
@@ -79,7 +81,7 @@ class Assignment(db.Model):
     questions = db.relationship('Question', backref='assignment', lazy=True)
 
 # Enumerator for Question Types - Open to Extension
-class QuestionType(Enum):
+class QuestionType(enum.Enum):
     MCQ = 'mcq'
     PROGRAMMING = 'programming'
 
@@ -102,7 +104,7 @@ class Option(db.Model):
     is_correct = db.Column(db.Boolean, default=False)
 
 # Enumerator for Test Case Types
-class TestCaseType(Enum):
+class TestCaseType(enum.Enum):
     PUBLIC = 'public'
     PRIVATE = 'private'
 

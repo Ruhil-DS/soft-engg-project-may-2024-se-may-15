@@ -10,6 +10,6 @@ const router = createRouter({
     { path:'/login', name: 'Login', component: Login },
     { path: '/signup', name: 'Signup', component: Signup },
   ]
-})
+});
 
-export default router
+export default router;
