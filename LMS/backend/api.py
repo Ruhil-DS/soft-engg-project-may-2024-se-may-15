@@ -1,6 +1,6 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course
+from database import db, Course, Module
 
 api = Api(prefix='/api/v1')
 
@@ -33,3 +33,23 @@ class Courses(Resource):
         return marshal(course, course_fields), 200
 
 api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
+
+
+module_fields = {
+    "module_id": fields.String,
+    "module_name": fields.String,
+    "module_description": fields.String
+}
+
+class Modules(Resource):
+    @auth_required('token')
+    def get(self, course_id):
+        modules = Module.query.filter_by(course_id=course_id).all()
+        if len(modules) == 0:
+            return {"message": "No Modules Found"}, 404
+        return {
+                "course_id": course_id,
+                "modules": marshal(modules, module_fields)
+            }, 200
+
+api.add_resource(Modules, '/courses/<string:course_id>/modules')

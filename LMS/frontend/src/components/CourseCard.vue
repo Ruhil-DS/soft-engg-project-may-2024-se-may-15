@@ -6,6 +6,13 @@ export default {
         return {
             userRole: sessionStorage.getItem('role'),
         }
+    },
+
+    methods: {
+        goToCourse() {
+            sessionStorage.setItem('course-id', this.course.course_id);
+            this.$router.push({ path: '/course' });
+        }
     }
 };
 </script>
@@ -18,11 +25,11 @@ export default {
             <p class="card-text">{{course.course_description}}</p>
 
             <div v-if="userRole === 'student'">
-                <button class="btn btn-primary m-3" @click="">Launch Course <i class="bi bi-rocket-takeoff-fill"></i></button>
+                <button class="btn btn-primary m-3" @click="goToCourse()">Launch Course <i class="bi bi-rocket-takeoff-fill"></i></button>
             </div>
             
             <div v-if="userRole === 'instructor'">
-                <button class="btn btn-primary" @click="">Manage Course <i class="bi bi-tools"></i></button>
+                <button class="btn btn-primary" @click="goToCourse()">Manage Course <i class="bi bi-tools"></i></button>
             </div>
         </div>
     </div>
