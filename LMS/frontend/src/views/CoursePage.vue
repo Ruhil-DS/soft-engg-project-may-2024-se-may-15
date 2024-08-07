@@ -56,7 +56,7 @@ export default {
         <h5>{{error}}</h5>
     </div>
     <div class="row m-4" v-else>
-        <div class="col-3 p-3 bg-body-secondary">
+        <div class="col-2 p-3 bg-body-secondary">
             <div class="row">
                 <h5 class="fw-semibold">{{courseName}}</h5>
                 <h6 class="text-muted fw-semibold fst-italic">{{courseID}}</h6>
@@ -70,18 +70,42 @@ export default {
                                 General Information
                             </button>
                         </h2>
-                        <div id="generalInfo" class="accordion-collapse collapse show" data-bs-parent="#modules">
-                            <div class="accordion-body">
-                                Course Description
+                        <router-link class="text-decoration-none text-dark nav-link" to="/course">
+                            <div id="generalInfo" class="accordion-collapse collapse show" data-bs-parent="#modules">
+                                <div class="accordion-body">
+                                    Course Description            
+                                </div>
                             </div>
-                        </div>
+                        </router-link>
                     </div>
                     <ModuleListing v-for="module in modules" :key="module.module_id" :module="module"/>
                 </div>
             </div>
         </div>
         <div class="col">
-            Module View
+            <router-view />
         </div>
     </div>
 </template>
+
+<style scoped>
+a.nav-link:hover > div {
+    font-weight: 600;
+    color: #007dff;
+    
+}
+
+a.router-link-exact-active > div {
+    font-weight: 600;
+    color: black;
+}
+
+.accordion-button {
+    color: white;
+    background-color: #007dff;
+}
+
+.accordion-button:after {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") !important;
+}
+</style>
