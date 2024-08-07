@@ -25,7 +25,7 @@ export default {
     <nav class="navbar sticky-top navbar-expand-lg bg-body-secondary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <img :src="'src/assets/Logo.png'" alt="SEEK++ Logo" style="height: 70px">
+                <img :src="'/src/assets/Logo.png'" alt="SEEK++ Logo" style="height: 70px">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
