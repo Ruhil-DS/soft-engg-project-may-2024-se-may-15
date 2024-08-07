@@ -17,12 +17,12 @@ export default {
             this.$store.commit('resetState');
             this.$router.push({ path: '/login' });
         }
-    }
+    },
 }
 </script>
 
 <template>
-    <nav class="navbar sticky-top navbar-expand-lg bg-body-secondary mb-5">
+    <nav class="navbar sticky-top navbar-expand-lg bg-body-secondary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img :src="'src/assets/Logo.png'" alt="SEEK++ Logo" style="height: 70px">

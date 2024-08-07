@@ -40,6 +40,8 @@ export default {
   },
 
   async mounted() {
+    sessionStorage.removeItem('course-id');
+
     this.today = getToday();
     this.term = getTerm();
 
@@ -60,7 +62,7 @@ export default {
 </script>
 
 <template>
-  <div class="row">
+  <div class="row mt-5">
     <div class="col ms-5">
       <h3>{{userName}}'s Dashboard</h3>
     </div>

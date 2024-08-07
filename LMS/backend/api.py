@@ -40,7 +40,6 @@ module_fields = {
     "module_name": fields.String,
     "module_description": fields.String
 }
-
 class Modules(Resource):
     @auth_required('token')
     def get(self, course_id):

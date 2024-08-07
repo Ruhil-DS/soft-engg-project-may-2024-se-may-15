@@ -40,7 +40,7 @@ export default {
   <RouterView />
 
   <footer class="bg-body-secondary align-items-center text-center" id="footer-row">
-    <div class="col p-3 mt-5">
+    <div class="col p-3">
       <p class="fs-5 m-2">
         &copy; SEEK++ LMS, 2024 &ensp; <span style="font-size: 1.2rem;">|</span> &ensp; BSCS3001 SE Project &ensp; <span
           style="font-size: 1.2rem;">|</span> &ensp; Website Designed by <a
