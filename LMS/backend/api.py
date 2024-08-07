@@ -1,6 +1,6 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module
+from database import db, Course, Module, Lesson
 
 api = Api(prefix='/api/v1')
 
@@ -36,7 +36,7 @@ api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
 
 
 module_fields = {
-    "module_id": fields.String,
+    "module_id": fields.Integer,
     "module_name": fields.String,
     "module_description": fields.String
 }
@@ -52,3 +52,33 @@ class Modules(Resource):
             }, 200
 
 api.add_resource(Modules, '/courses/<string:course_id>/modules')
+
+
+class ContentField(fields.Raw):
+    def format(self, id):
+        lesson = Lesson.query.get(id);
+        return {
+                'content': lesson.lesson_description,
+                'video_url': lesson.video_url,
+                'slide_url': lesson.slide_url
+            }
+
+lesson_fields = {
+    'lesson_id': fields.Integer,
+    'lesson_name': fields.String,
+    'content': ContentField(attribute='lesson_id')
+}
+
+class Lessons(Resource):
+    @auth_required('token')
+    def get(self, course_id, module_id):
+        lessons = Lesson.query.filter_by(module_id=module_id).all()
+        if len(lessons) == 0:
+            return {"message": "No Lessons Found"}, 404
+        return {
+                "course_id": course_id,
+                "module_id": module_id,
+                "lessons": marshal(lessons, lesson_fields)
+            }, 200
+
+api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons')

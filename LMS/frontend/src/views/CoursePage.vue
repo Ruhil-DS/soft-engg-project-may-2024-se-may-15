@@ -1,4 +1,6 @@
 <script>
+import ModuleListing from '../components/ModuleListing.vue';
+
 export default {
     data() {
         return {
@@ -8,6 +10,10 @@ export default {
             modules: [],
             error: null
         }
+    },
+
+    components: {
+        ModuleListing,
     },
 
     async mounted() {
@@ -37,7 +43,7 @@ export default {
         const modulesData = await modulesResponse.json();
         
         if (modulesResponse.ok) {
-            this.modules = modulesData;
+            this.modules = modulesData['modules'];
         } else {
             this.error = modulesData.message;
         }
@@ -51,10 +57,28 @@ export default {
     </div>
     <div class="row m-4" v-else>
         <div class="col-3 p-3 bg-body-secondary">
-            <h5 class="fw-semibold">{{courseName}}</h5>
-            <h6 class="text-muted fw-semibold fst-italic">{{courseID}}</h6>
-            <hr>
-            List of Modules
+            <div class="row">
+                <h5 class="fw-semibold">{{courseName}}</h5>
+                <h6 class="text-muted fw-semibold fst-italic">{{courseID}}</h6>
+                <hr>
+            </div>
+            <div class="row">
+                <div class="accordion" id="modules">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#generalInfo" aria-expanded="true" aria-controls="generalInfo">
+                                General Information
+                            </button>
+                        </h2>
+                        <div id="generalInfo" class="accordion-collapse collapse show" data-bs-parent="#modules">
+                            <div class="accordion-body">
+                                Course Description
+                            </div>
+                        </div>
+                    </div>
+                    <ModuleListing v-for="module in modules" :key="module.module_id" :module="module"/>
+                </div>
+            </div>
         </div>
         <div class="col">
             Module View
