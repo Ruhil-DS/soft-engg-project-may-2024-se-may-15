@@ -24,14 +24,16 @@ def code_error_explanation(chat_model=chat_model, code_block: str=None) -> str:
     If there is no error, you simply say "no error" and nothing else. But if there is an error, \
     you give a very detailed explanation of what went wrong with the code block. at least 25 words \
     for small errors and at least 50 words for large errors. \ 
+    No explanation for lines with no error.
     The code block is as follows: {code_block_input} \
     
     The output should be formatted in a way that it can be parsed as a json. The entire output \
     should be in a json format and no boilerplate text is required outside of the json structure. \
-    Follow the following JSON structure by using the following keys. Value will be the explanation \
-    that was asked to you for the error in the code block: 
+    The json should have a key in this format
     line_x: the line number of the error. Here, x denotes the line number. \
     
+    This key is present only for the lines where there is an error. Correct lines should \
+    not be included in as a key. If the entire code has no error, you should simply output an empty json\
     Again, remember not to provide boilerplate text, no explanation, no unnecessary text \
     to explain the output. \
     and directly the json formatted data.
@@ -51,6 +53,8 @@ def code_error_explanation(chat_model=chat_model, code_block: str=None) -> str:
 
 if __name__ == '__main__':
     sample_code = """
-    print(Hello World)
+    print("Hello World")
+    a == 10+10
+    print(a)
     """
     print(code_error_explanation(chat_model, code_block=sample_code))
