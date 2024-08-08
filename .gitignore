@@ -35,3 +35,4 @@ coverage
 
 # TODO: Remove the following later while submission
 /LMS/backend/instance/
+/instance/
