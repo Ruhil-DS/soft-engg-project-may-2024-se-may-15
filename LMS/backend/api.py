@@ -1,6 +1,6 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module, Lesson
+from database import db, Course, Module, Lesson, Note
 
 api = Api(prefix='/api/v1')
 
@@ -91,3 +91,38 @@ class Lessons(Resource):
             return marshal(lesson, lesson_fields), 200
 
 api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/lessons/<int:lesson_id>')
+
+note_fields = {
+    'note_id': fields.Integer,
+    'user_id': fields.Integer,
+    'lesson_id': fields.Integer,
+    'note': fields.String
+}
+
+class Notes(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('note', type=str, required=True, help='Note is required')
+        super(Notes, self).__init__()
+
+    @auth_required('token')
+    def get(self, lesson_id):
+        note = Note.query.filter_by(user_id=current_user.id, lesson_id=lesson_id).first()
+        if note is None:
+            return {"message": "No Note Found"}, 404
+        return marshal(note, note_fields), 200
+    
+    @auth_required('token')
+    def post(self, lesson_id):
+        args = self.parser.parse_args()
+        note = Note.query.filter_by(user_id=current_user.id, lesson_id=lesson_id).first()
+        if note is not None:
+            note.note = args['note']
+            db.session.commit()
+        else:
+            note = Note(user_id=current_user.id, lesson_id=lesson_id, note=args['note'])
+            db.session.add(note)
+            db.session.commit()
+        return {"message": "Note posted"}, 201
+    
+api.add_resource(Notes, '/notes/<int:lesson_id>')
