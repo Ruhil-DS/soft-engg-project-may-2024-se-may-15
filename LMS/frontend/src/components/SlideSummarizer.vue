@@ -20,15 +20,15 @@ export default {
         // Fetch Video Summary
 
         // Remove following after implementing above
-        this.summary = 'In this video, professor discusses about the list data structure, how to create it, and its basic functions...';
-        this.translatedSummary = 'In this video, professor discusses about the list data structure, how to create it, and its basic functions...';
+        this.summary = 'The slide deck begins with an introduction to the list data structure, how to create it, and its basic functions...';
+        this.translatedSummary = 'The slide deck begins with an introduction to the list data structure, how to create it, and its basic functions...';
     }
 };
 </script>
 
 <template>
     <div id="video-summarizer" class="rounded-3 ms-3 mt-2 p-3 bg-body-secondary">
-        <h5 class="mb-3">Video Summary (AI Generated)</h5>
+        <h5 class="mb-3">Slide Summary (AI Generated)</h5>
         <div class="input-group mb-3 w-25">
             <label class="input-group-text" for="target-language">Language</label>
             <select class="form-select" id="target-language" v-model="targetLanguage" required>
