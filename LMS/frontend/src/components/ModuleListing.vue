@@ -41,7 +41,7 @@ export default {
                     {{error}}
                 </div>
                 <div v-else>
-                    <div :class="{'border-bottom': index < lessons.length - 1}" v-for="(lesson, index) in lessons" :key="lesson.lesson_id" @click="">
+                    <div :class="{'border-bottom': index < lessons.length - 1}" v-for="(lesson, index) in lessons" :key="lesson.lesson_id">
                         <router-link class="text-decoration-none text-dark nav-link" :to="`/course/module/lesson/${lesson.lesson_id}/content`">
                             <div>{{lesson.lesson_name}}: Content</div>
                         </router-link>

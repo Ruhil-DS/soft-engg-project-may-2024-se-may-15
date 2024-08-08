@@ -56,7 +56,7 @@ api.add_resource(Modules, '/courses/<string:course_id>/modules')
 
 class ContentField(fields.Raw):
     def format(self, id):
-        lesson = Lesson.query.get(id);
+        lesson = Lesson.query.get(id)
         return {
                 'content': lesson.lesson_description,
                 'video_url': lesson.video_url,
@@ -71,14 +71,23 @@ lesson_fields = {
 
 class Lessons(Resource):
     @auth_required('token')
-    def get(self, course_id, module_id):
-        lessons = Lesson.query.filter_by(module_id=module_id).all()
-        if len(lessons) == 0:
-            return {"message": "No Lessons Found"}, 404
-        return {
-                "course_id": course_id,
-                "module_id": module_id,
-                "lessons": marshal(lessons, lesson_fields)
-            }, 200
+    def get(self, course_id=None, module_id=None, lesson_id=None):
+        # Fetch all lessons
+        if lesson_id is None:
+            lessons = Lesson.query.filter_by(module_id=module_id).all()
+            if len(lessons) == 0:
+                return {"message": "No Lessons Found"}, 404
+            return {
+                    "course_id": course_id,
+                    "module_id": module_id,
+                    "lessons": marshal(lessons, lesson_fields)
+                }, 200
+        
+        # Fetch a particular lesson
+        else:
+            lesson = Lesson.query.filter_by(lesson_id=lesson_id).first()
+            if not lesson:
+                return {"message": "Lesson not found"}, 404
+            return marshal(lesson, lesson_fields), 200
 
-api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons')
+api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/lessons/<int:lesson_id>')

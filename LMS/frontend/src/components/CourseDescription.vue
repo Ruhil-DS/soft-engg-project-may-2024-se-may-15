@@ -44,7 +44,7 @@ export default {
 
 <template>
     <div>
-        <h3>Course Description</h3>
+        <h4 class="mb-3">Course Description</h4>
         <p>
             {{courseDescription}}
         </p>
