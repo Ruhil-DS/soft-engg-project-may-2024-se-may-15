@@ -56,7 +56,7 @@ export default {
         const heightResizeInterval = setInterval(() => {
             const textarea = document.querySelector('textarea');
             const scratchpad = document.querySelector('iframe');
-            textarea.rows = (scratchpad.clientHeight - 112) / 26;
+            textarea.rows = (scratchpad.clientHeight - 112) / 25.5;
         }, 500);
 
         const noteResponse = await fetch(`http://127.0.0.1:5000/api/v1/notes/${this.lessonID}`, {
@@ -78,7 +78,7 @@ export default {
 
 <template>
     <div id="scratchpad" class="rounded-3 p-3 bg-body-secondary">
-        <h4 class="mb-3">Scratchpad</h4>
+        <h5 class="mb-3">Scratchpad</h5>
         <textarea class="form-control mb-3" placeholder="Take notes..." v-model='note'></textarea>
         <div>
             <button class="btn btn-primary me-3" @click="clearNote()">Clear Note</button>

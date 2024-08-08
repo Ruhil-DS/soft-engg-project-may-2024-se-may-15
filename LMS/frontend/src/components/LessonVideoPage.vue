@@ -50,20 +50,20 @@ export default {
 </script>
 
 <template>
-    <div class="mb-4 border-dark border">
+    <div class="mb-4">
         <h4>{{lessonName}}</h4>
         <h5 class="text-muted mb-3">Lesson Video</h5>
     </div>
     <div class="row">
-        <div class="col-8 border-dark border">
-            <iframe :src="lessonVideoUrl" width="100%" :height="iframeHeight"></iframe>
+        <div class="col-8 p-0 ps-3 pe-3">
+            <iframe class="rounded-3" :src="lessonVideoUrl" width="100%" :height="iframeHeight"></iframe>
         </div>
-        <div class="col p-0 border-dark border">
-                <Scratchpad :lessonID="lessonID"/>
+        <div class="col p-0">
+            <Scratchpad :lessonID="lessonID"/>
         </div>
     </div>
     <div class="row">
-        <div class="p-0 border-dark border">
+        <div class="p-0">
             <VideoSummarizer :lessonID="lessonID"/>
         </div>
     </div>
