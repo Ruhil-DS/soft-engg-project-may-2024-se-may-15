@@ -32,8 +32,6 @@ class Courses(Resource):
             return {"message": "Course not found"}, 404
         return marshal(course, course_fields), 200
 
-api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
-
 
 module_fields = {
     "module_id": fields.Integer,
@@ -50,8 +48,6 @@ class Modules(Resource):
                 "course_id": course_id,
                 "modules": marshal(modules, module_fields)
             }, 200
-
-api.add_resource(Modules, '/courses/<string:course_id>/modules')
 
 
 class ContentField(fields.Raw):
@@ -98,7 +94,6 @@ class Lessons(Resource):
                 return {"message": "Lesson not found"}, 404
             return marshal(lesson, lesson_fields), 200
 
-api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
 
 note_fields = {
     'note_id': fields.Integer,
@@ -132,5 +127,8 @@ class Notes(Resource):
             db.session.add(note)
             db.session.commit()
         return {"message": "Note posted"}, 201
-    
+
+api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
+api.add_resource(Modules, '/courses/<string:course_id>/modules')
+api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
 api.add_resource(Notes, '/notes/<int:lesson_id>')
