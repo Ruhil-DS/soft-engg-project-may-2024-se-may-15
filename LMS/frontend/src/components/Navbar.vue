@@ -17,15 +17,15 @@ export default {
             this.$store.commit('resetState');
             this.$router.push({ path: '/login' });
         }
-    }
+    },
 }
 </script>
 
 <template>
-    <nav class="navbar sticky-top navbar-expand-lg bg-body-secondary mb-5">
+    <nav class="navbar sticky-top navbar-expand-lg bg-body-secondary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <img :src="'src/assets/Logo.png'" alt="SEEK++ Logo" style="height: 70px">
+                <img :src="'/src/assets/Logo.png'" alt="SEEK++ Logo" style="height: 70px">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@ export default {
                 <div class="navbar-nav">
                     <router-link class="nav-link" to="/">Home</router-link>
 
-                    <router-link class="nav-link" to="/users" v-if="role === 'admin'">All Users</router-link>
+                    <!-- <router-link class="nav-link" to="/users" v-if="role === 'admin'">All Users</router-link>
 
                     <router-link class="nav-link" to="/create-category"
                         v-if="role === 'admin' || role === 'store_manager'">Create Category</router-link>
@@ -52,7 +52,7 @@ export default {
                     <router-link class="nav-link" to="/orders" v-if="role === 'user'">Orders</router-link>
 
                     <router-link class="nav-link" to="/stats" v-if="role === 'store_manager'">Data and
-                        Statistics</router-link>
+                        Statistics</router-link> -->
 
                     <a class="nav-link" href="#" v-if="isLoggedIn" @click="logout()">Log out</a>
                 </div>
