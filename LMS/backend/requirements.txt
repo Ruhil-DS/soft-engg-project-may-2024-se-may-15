@@ -1,0 +1,9 @@
+flask
+flask_sqlalchemy
+flask_security
+flask_cors
+flask_restful
+werkzeug
+langchain
+google-generativeai
+langchain-google-genai

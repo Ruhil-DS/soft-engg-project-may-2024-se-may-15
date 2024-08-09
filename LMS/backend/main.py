@@ -26,7 +26,7 @@ with app.app_context():
     db.session.commit()
 
     if not datastore.find_user(email='instructor1@seekpp.com'):
-        datastore.create_user(username='instructor1',
+        datastore.create_user(username='Instructor1',
                               email='instructor1@seekpp.com',
                               password=generate_password_hash('instructor1'),
                               roles=['instructor'])
