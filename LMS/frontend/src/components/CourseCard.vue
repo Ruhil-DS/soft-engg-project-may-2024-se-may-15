@@ -11,7 +11,7 @@ export default {
     methods: {
         goToCourse() {
             sessionStorage.setItem('course-id', this.course.course_id);
-            this.$router.push({ path: '/course' });
+            this.$router.push({ path: `/course/${this.course.course_id}` });
         }
     }
 };

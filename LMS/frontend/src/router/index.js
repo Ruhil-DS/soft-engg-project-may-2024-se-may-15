@@ -34,7 +34,7 @@ const router = createRouter({
           name: 'LessonSlidePage'
         },
         {
-          path: '',
+          path: ':course_id',
           component: CourseDescription,
           name: 'CourseDescription'
         }
