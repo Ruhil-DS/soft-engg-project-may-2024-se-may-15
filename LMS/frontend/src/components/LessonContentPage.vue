@@ -29,7 +29,6 @@ export default {
             this.lessonContent = lessonData['content']['content'];
             this.lessonVideoUrl = lessonData['content']['video_url'];
             this.lessonSlideUrl = lessonData['content']['slide_url'];
-            this.computeFileID(this.lessonSlideUrl);
         } else {
             this.error = lessonData.message;
         }
