@@ -39,3 +39,5 @@ coverage
 
 # API KEY
 LMS/backend/.google_api
+LMS/assets/
+LMS/testing/__pycache__/

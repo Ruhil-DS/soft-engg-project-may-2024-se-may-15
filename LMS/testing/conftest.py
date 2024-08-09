@@ -1,9 +1,11 @@
-import pytest
 import datetime
 import uuid
+
+import pytest
+
 from ..backend.config import TestingConfig
-from ..backend.database import db, User, Role, Course, Module, Lesson, Note, Assignment, AssignmentType, Question, \
-    QuestionType, Option, Submission
+from ..backend.database import Assignment, AssignmentType, Course, Lesson, Module, Note, Option, Question, QuestionType, \
+    Role, Submission, User, db
 from ..backend.main import app as flask_app
 
 

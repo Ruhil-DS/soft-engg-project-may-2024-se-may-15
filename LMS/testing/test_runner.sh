@@ -1,1 +1,2 @@
-pytest main_test.py
+cd ../
+pytest -vv --html=report.html testing/unit/
