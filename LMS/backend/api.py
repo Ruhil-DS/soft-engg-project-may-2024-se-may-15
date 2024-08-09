@@ -71,7 +71,15 @@ lesson_fields = {
 
 class Lessons(Resource):
     @auth_required('token')
-    def get(self, course_id=None, module_id=None, lesson_id=None):
+    def get(self, course_id, module_id, lesson_id=None):
+        course = Course.query.filter_by(course_id=course_id).first()
+        module = Module.query.filter_by(course_id=course_id, module_id=module_id).first()
+        if not course or not module:
+            return {"message": "Course or Module not found"}, 404
+        
+        if module.course_id != course.course_id:
+            return {"message": "Module not found"}, 404
+        
         # Fetch all lessons
         if lesson_id is None:
             lessons = Lesson.query.filter_by(module_id=module_id).all()
@@ -85,12 +93,12 @@ class Lessons(Resource):
         
         # Fetch a particular lesson
         else:
-            lesson = Lesson.query.filter_by(lesson_id=lesson_id).first()
+            lesson = Lesson.query.filter_by(module_id=module_id, lesson_id=lesson_id).first()
             if not lesson:
                 return {"message": "Lesson not found"}, 404
             return marshal(lesson, lesson_fields), 200
 
-api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/lessons/<int:lesson_id>')
+api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
 
 note_fields = {
     'note_id': fields.Integer,

@@ -42,13 +42,13 @@ export default {
                 </div>
                 <div v-else>
                     <div :class="{'border-bottom': index < lessons.length - 1}" v-for="(lesson, index) in lessons" :key="lesson.lesson_id">
-                        <router-link class="text-decoration-none text-dark nav-link" :to="`/course/module/lesson/${lesson.lesson_id}/content`">
+                        <router-link class="text-decoration-none text-dark nav-link" :to="`/course/${courseID}/module/${module.module_id}/lesson/${lesson.lesson_id}/content`">
                             <div>{{lesson.lesson_name}}: Content</div>
                         </router-link>
-                        <router-link class="text-decoration-none text-dark nav-link" :to="`/course/module/lesson/${lesson.lesson_id}/video`">
+                        <router-link class="text-decoration-none text-dark nav-link" :to="`/course/${courseID}/module/${module.module_id}/lesson/${lesson.lesson_id}/video`">
                             <div>{{lesson.lesson_name}}: Video</div>
                         </router-link>
-                        <router-link class="text-decoration-none text-dark nav-link" :to="`/course/module/lesson/${lesson.lesson_id}/slide`">
+                        <router-link class="text-decoration-none text-dark nav-link" :to="`/course/${courseID}/module/${module.module_id}/lesson/${lesson.lesson_id}/slide`">
                             <div>{{lesson.lesson_name}}: Slide</div>
                         </router-link>
                     </div>

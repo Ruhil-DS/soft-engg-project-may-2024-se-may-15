@@ -6,6 +6,7 @@ export default {
     data() {
         return {
             courseID: sessionStorage.getItem('course-id'),
+            moduleID: this.$route.params.module_id,
             lessonID: this.$route.params.lesson_id,
             lessonName: null,
             lessonContent: null,
@@ -21,13 +22,11 @@ export default {
     },
 
     async mounted() {
-        const heightResizeInterval = setInterval(() => {
-            const iframe = document.querySelector('iframe');
-            const iframeHeight = iframe.offsetWidth * 9 / 16;
-            iframe.style.height = iframeHeight + 'px';
-        }, 500);
+        const iframe = document.querySelector('iframe');
+        const iframeHeight = iframe.offsetWidth * 9 / 16;
+        iframe.style.height = iframeHeight + 'px';
 
-        const lessonResponse = await fetch(`http://127.0.0.1:5000/api/v1/lessons/${this.$route.params.lesson_id}`, {
+        const lessonResponse = await fetch(`http://127.0.0.1:5000/api/v1/courses/${this.courseID}/modules/${this.moduleID}/lessons/${this.lessonID}`, {
             method: 'GET',
             headers: {
                 'Authentication-Token': sessionStorage.getItem('auth-token')
@@ -37,7 +36,6 @@ export default {
         const lessonData = await lessonResponse.json();
         
         if (lessonResponse.ok) {
-            this.lessonID = lessonData['lesson_id'];
             this.lessonName = lessonData['lesson_name'];
             this.lessonContent = lessonData['content']['content'];
             this.lessonVideoUrl = lessonData['content']['video_url'];
@@ -64,7 +62,7 @@ export default {
     </div>
     <div class="row">
         <div class="p-0">
-            <VideoSummarizer :lessonID="lessonID"/>
+            <VideoSummarizer :moduleID="moduleID" :lessonID="lessonID"/>
         </div>
     </div>
 </template>

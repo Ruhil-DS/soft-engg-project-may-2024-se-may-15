@@ -19,17 +19,17 @@ const router = createRouter({
       component: CoursePage,
       children: [
         {
-          path: 'module/lesson/:lesson_id/content',
+          path: ':course_id/module/:module_id/lesson/:lesson_id/content',
           component: LessonContentPage,
           name: 'LessonContentPage'
         },
         {
-          path: 'module/lesson/:lesson_id/video',
+          path: ':course_id/module/:module_id/lesson/:lesson_id/video',
           component: LessonVideoPage,
           name: 'LessonVideoPage'
         },
         {
-          path: 'module/lesson/:lesson_id/slide',
+          path: ':course_id/module/:module_id/lesson/:lesson_id/slide',
           component: LessonSlidePage,
           name: 'LessonSlidePage'
         },
