@@ -1,6 +1,6 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module, Lesson, Note
+from database import db, Course, Module, Lesson, Note, Chatbot
 
 api = Api(prefix='/api/v1')
 
@@ -10,15 +10,8 @@ course_fields = {
     "course_name": fields.String,
     "course_description": fields.String
 }
-class Courses(Resource):
-    # NOTE: Only to be implemented if POST/PUT/DELETE request for CUD operations
-    # def __init__(self):
-    #     self.parser = reqparse.RequestParser()
-    #     self.parser.add_argument('course_id', type=str, required=True, help='Course ID is required')
-    #     self.parser.add_argument('course_name', type=str, required=True, help='Course Name is required')
-    #     self.parser.add_argument('course_description', type=str, required=True, help='Course Description is required')
-    #     super(Courses, self).__init__()
 
+class Courses(Resource):
     @auth_required('token')
     def get(self, course_id=None):
         if course_id is None:
@@ -38,6 +31,7 @@ module_fields = {
     "module_name": fields.String,
     "module_description": fields.String
 }
+
 class Modules(Resource):
     @auth_required('token')
     def get(self, course_id):
@@ -128,7 +122,36 @@ class Notes(Resource):
             db.session.commit()
         return {"message": "Note posted"}, 201
 
+
+class Chatbot(Resource):
+    def __init__(self):
+        self.post_parser = reqparse.RequestParser()
+        self.post_parser.add_argument('course_id', type=str, required=True, help='Course ID is required')
+        self.post_parser.add_argument('query', type=str, required=True, help='Query is required')
+        
+        self.put_parser = reqparse.RequestParser()
+        self.put_parser.add_argument('course_id', type=str, required=True, help='Note is required')
+        self.put_parser.add_argument('new_knowledge', type=str, required=True, help='Knowledge is required')
+        
+        super(Notes, self).__init__()
+    
+    # Chatbot Query Endpoint
+    @auth_required('token')
+    def post(self):
+        pass
+    
+    # Chatbot Train Endpoint
+    @auth_required('token')
+    @roles_accepted('instructor')
+    def put(self):
+        args = self.put_parser.parse_args()
+        chatbot = Chatbot(course_id=args['course_id'], knowledge=args['new_knowledge'])
+        db.session.add(chatbot)
+        db.session.commit()
+        return {"message": "Chatbot knowledge base updated successfully"}, 201
+
 api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
 api.add_resource(Modules, '/courses/<string:course_id>/modules')
 api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
 api.add_resource(Notes, '/notes/<int:lesson_id>')
+api.add_resource(Chatbot, '/chatbot/query', '/chatbot/train')
