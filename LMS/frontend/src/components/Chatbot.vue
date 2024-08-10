@@ -45,7 +45,7 @@ export default {
                     <span class="fw-medium">Ask pushPAK <i class="bi bi-chat-left-text-fill"></i></span>
     </button>
     <div class="modal fade" id="chatbot" tabindex="-1" aria-labelledby="chatbotLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="chatbotLabel"><i class="bi bi-chat-left-text"></i> Ask <abbr title="Push Pupils to Attain Knowledge">pushPAK</abbr></h1>
@@ -80,8 +80,8 @@ export default {
                 </div>
                 <div class="modal-footer bg-body-secondary text-center fst-italic text-muted">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control rounded-3 me-2" v-model="message" placeholder="Ask pushPAK or just say Hi..." aria-describedby="sendButton">
-                        <button class="btn btn-primary rounded-circle" type="button" id="sendButton"><i class="bi bi-send-fill" @click="sendMessage()"></i></button>
+                        <input type="text" class="form-control rounded-3 me-2" v-model="message" placeholder="Ask pushPAK or just say Hi...">
+                        <button class="btn btn-primary rounded-circle" type="submit" id="sendButton"><i class="bi bi-send-fill" @click="sendMessage()"></i></button>
                     </div>
                     <p>Did you know, pushPAK stands for '<span class="fw-bold">push P</span>upils to <span class="fw-bold">A</span>ttain <span class="fw-bold">K</span>nowledge'?</p>
                 </div>
