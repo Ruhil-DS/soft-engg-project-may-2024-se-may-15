@@ -56,10 +56,10 @@ export default {
                         <!-- Chatbot Message -->
                         <div class="row d-flex align-items-end" v-if="message.sender === 'chatbot'">
                             <div class="col-1">
-                                <h5 class="bg-primary p-2 m-0 rounded-circle text-center text-light"><i class="bi bi-robot"></i></h5>
+                                <h5 class="bg-primary p-2 m-0 rounded-pill text-center text-light"><i class="bi bi-robot"></i></h5>
                             </div>
                             <div class="col d-flex justify-content-start">
-                                <span class="row text-dark bg-body-secondary p-3 rounded-end-5 rounded-top-5 w-50 justify-content-start" >
+                                <span class="text-dark bg-body-secondary p-3 rounded-end-5 rounded-top-5 message" >
                                     {{message.message}}
                                 </span>
                             </div>
@@ -68,7 +68,7 @@ export default {
                         <!-- User Message -->
                         <div class="row d-flex align-items-end" v-if="message.sender === 'user'">
                             <div class="col d-flex justify-content-end">
-                                <span class="row text-light bg-primary p-3 rounded-start-5 rounded-top-5 w-50 justify-content-end">
+                                <span class="text-light bg-primary p-3 rounded-start-5 rounded-top-5 message">
                                     {{message.message}}
                                 </span>
                             </div>
@@ -97,5 +97,9 @@ export default {
 
 .modal-footer {
     font-size: 1rem;
+}
+
+.message {
+    max-width: 60%;
 }
 </style>
