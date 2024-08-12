@@ -22,6 +22,7 @@ export default {
             });
             this.message = '';
             
+            // TODO: Backend Call
             // Fetch Query Backend
             const responseMessage = {
                 message: 'This is a default Chatbot message',

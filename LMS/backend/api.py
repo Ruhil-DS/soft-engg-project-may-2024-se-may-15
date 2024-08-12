@@ -150,6 +150,7 @@ class Chatbot(Resource):
         db.session.commit()
         return {"message": "Chatbot knowledge base updated successfully"}, 201
 
+
 api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
 api.add_resource(Modules, '/courses/<string:course_id>/modules')
 api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
