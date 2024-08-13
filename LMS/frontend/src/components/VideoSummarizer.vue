@@ -6,7 +6,10 @@ export default {
         return {
             summary: null,
             translatedSummary: null,
+            keyPoints: [],
+            translatedKeyPoints: [],
             targetLanguage: 'english',
+            error: null,
         }
     },
 
@@ -18,10 +21,23 @@ export default {
 
     async mounted() {
         // Fetch Video Summary
+        const summaryResponse = await fetch(`http://127.0.0.1:5000/api/v1/courses/${this.$route.params.course_id}/modules/${this.$route.params.module_id}/lessons/${this.$route.params.lesson_id}/generate-summary/video`, {
+            "method": "GET",
+            "headers": {
+                'Authentication-Token': sessionStorage.getItem('auth-token')
+            }
+        });
 
-        // Remove following after implementing above
-        this.summary = 'In this video, professor discusses about the list data structure, how to create it, and its basic functions...';
-        this.translatedSummary = 'In this video, professor discusses about the list data structure, how to create it, and its basic functions...';
+        const summaryData = await summaryResponse.json();
+
+        if (summaryResponse.ok) {
+            this.summary = summaryData['summary'];
+            this.translatedSummary = summaryData['summary'];
+            this.keyPoints = summaryData['key_points'];
+            this.translatedKeyPoints = summaryData['key_points'];
+        } else {
+            this.error = summaryData.message;
+        }
     }
 };
 </script>
@@ -42,6 +58,12 @@ export default {
                 <option value="kannada">Kannada</option>
             </select>
         </div>
+        <p class="fw-bold mb-1">Summary</p>
         {{translatedSummary}}
+        <br>
+        <p class="fw-bold mt-4 mb-1">Quick Key Points</p>
+        <ol>
+            <li v-for="(keyPoint, index) in translatedKeyPoints" :key="index">{{keyPoint}}</li>
+        </ol>
     </div>
 </template>
