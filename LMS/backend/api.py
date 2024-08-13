@@ -2,6 +2,7 @@ from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
 from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB
 from gen_ai.chatbot import Chatbot as ChatbotLLM
+from gen_ai.video_summarizer import get_video_summary
 
 api = Api(prefix='/api/v1')
 
@@ -173,16 +174,10 @@ class ChatbotResource(Resource):
 class VideoSummarizer(Resource):
     @auth_required('token')
     def get(self, course_id, module_id, lesson_id):
-        # summarizer = Summarizer(args['url'])
-        # summary = summarizer.summarize()
-        return {
-            "summary": "summary",
-            "key_points": [
-                "key_point_1",
-                "key_point_2",
-                "key_point_3"
-            ]
-        }, 200
+        course = Course.query.filter_by(course_id=course_id).first()
+        lesson = Lesson.query.filter_by(module_id=module_id, lesson_id=lesson_id).first()
+        
+        return get_video_summary(course, lesson), 200
 
 
 class SlideSummarizer(Resource):
