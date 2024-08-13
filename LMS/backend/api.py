@@ -1,7 +1,7 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
 from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB
-from chatbot import Chatbot as ChatbotLLM
+from gen_ai.chatbot import Chatbot as ChatbotLLM
 
 api = Api(prefix='/api/v1')
 
@@ -170,8 +170,40 @@ class ChatbotResource(Resource):
         return {"message": "Chatbot knowledge base updated successfully"}, 201
 
 
+class VideoSummarizer(Resource):
+    @auth_required('token')
+    def get(self, course_id, module_id, lesson_id):
+        # summarizer = Summarizer(args['url'])
+        # summary = summarizer.summarize()
+        return {
+            "summary": "summary",
+            "key_points": [
+                "key_point_1",
+                "key_point_2",
+                "key_point_3"
+            ]
+        }, 200
+
+
+class SlideSummarizer(Resource):
+    @auth_required('token')
+    def get(self, course_id, module_id, lesson_id):
+        # summarizer = Summarizer(args['url'])
+        # summary = summarizer.summarize()
+        return {
+            "summary": "summary",
+            "key_points": [
+                "key_point_1",
+                "key_point_2",
+                "key_point_3"
+            ]
+        }, 200
+
+
 api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
 api.add_resource(Modules, '/courses/<string:course_id>/modules')
 api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
 api.add_resource(Notes, '/notes/<int:lesson_id>')
 api.add_resource(ChatbotResource, '/chatbot/query', '/chatbot/train')
+api.add_resource(VideoSummarizer, '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>/generate-summary/video')
+api.add_resource(SlideSummarizer, '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>/generate-summary/slide')
