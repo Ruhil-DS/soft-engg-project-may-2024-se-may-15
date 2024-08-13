@@ -41,3 +41,6 @@ coverage
 LMS/backend/.google_api
 LMS/assets/
 LMS/testing/__pycache__/
+LMS/testing/unit/__pycache__/__init__.cpython-311.pyc
+LMS/testing/unit/__pycache__/test_models.cpython-311-pytest-8.3.2.pyc
+LMS/__pycache__/__init__.cpython-311.pyc
