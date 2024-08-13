@@ -12,6 +12,7 @@ export default {
             lessonContent: null,
             lessonVideoUrl: null,
             lessonSlideUrl: null,
+            videoID: null,
             error: null,
         }
     },
@@ -19,6 +20,12 @@ export default {
     components: {
         Scratchpad,
         VideoSummarizer,
+    },
+
+    methods: {
+        computeVideoID(lessonVideoUrl) {
+            this.videoID = lessonVideoUrl.split('=')[1];
+        }
     },
 
     async mounted() {
@@ -40,6 +47,7 @@ export default {
             this.lessonContent = lessonData['content']['content'];
             this.lessonVideoUrl = lessonData['content']['video_url'];
             this.lessonSlideUrl = lessonData['content']['slide_url'];
+            this.computeVideoID(this.lessonVideoUrl);
         } else {
             this.error = lessonData.message;
         }
@@ -54,7 +62,7 @@ export default {
     </div>
     <div class="row">
         <div class="col-8 p-0 ps-3 pe-3">
-            <iframe class="rounded-3" :src="lessonVideoUrl" width="100%" :height="iframeHeight"></iframe>
+            <iframe class="rounded-3" :src="`https://www.youtube.com/embed/${videoID}`" width="100%" :height="iframeHeight"></iframe>
         </div>
         <div class="col p-0">
             <Scratchpad :lessonID="lessonID"/>

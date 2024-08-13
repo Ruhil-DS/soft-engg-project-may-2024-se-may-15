@@ -125,3 +125,10 @@ class Submission(db.Model):
     submission_date = db.Column(db.DateTime(), nullable=False)
     submission = db.Column(db.Text, nullable=False)
     grade = db.Column(db.String(), nullable=False)
+    
+# Model for Chatbot Knowledge Base
+class Chatbot(db.Model):
+    __tablename__ = 'chatbot'
+    knowledge_id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.String(8), db.ForeignKey('course.course_id'), nullable=False)
+    knowledge = db.Column(db.Text, nullable=False)
