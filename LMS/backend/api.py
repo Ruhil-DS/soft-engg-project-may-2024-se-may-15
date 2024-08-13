@@ -1,6 +1,7 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot
+from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB
+from chatbot import Chatbot as ChatbotLLM
 
 api = Api(prefix='/api/v1')
 
@@ -123,31 +124,49 @@ class Notes(Resource):
         return {"message": "Note posted"}, 201
 
 
-class Chatbot(Resource):
+class ChatbotResource(Resource):
     def __init__(self):
         self.post_parser = reqparse.RequestParser()
         self.post_parser.add_argument('course_id', type=str, required=True, help='Course ID is required')
         self.post_parser.add_argument('query', type=str, required=True, help='Query is required')
         
         self.put_parser = reqparse.RequestParser()
-        self.put_parser.add_argument('course_id', type=str, required=True, help='Note is required')
+        self.put_parser.add_argument('course_id', type=str, required=True, help='Course ID is required')
         self.put_parser.add_argument('new_knowledge', type=str, required=True, help='Knowledge is required')
         
-        super(Notes, self).__init__()
+        super(ChatbotResource, self).__init__()
     
     # Chatbot Query Endpoint
     @auth_required('token')
     def post(self):
-        pass
+        args = self.post_parser.parse_args()
+        
+        course = Course.query.filter_by(course_id=args['course_id']).first()
+        knowledge_string = ""
+        for knowledge in ChatbotDB.query.filter_by(course_id=args['course_id']).all():
+            knowledge_string += f"- {knowledge.knowledge}\n"
+        
+        chatbot = ChatbotLLM(course, knowledge_string)
+        response = chatbot.query(args['query'])
+        
+        return {"query": args['query'], "response": response}, 200
     
     # Chatbot Train Endpoint
     @auth_required('token')
     @roles_accepted('instructor')
     def put(self):
         args = self.put_parser.parse_args()
-        chatbot = Chatbot(course_id=args['course_id'], knowledge=args['new_knowledge'])
-        db.session.add(chatbot)
+        chatbot_knowledge = ChatbotDB(course_id=args['course_id'], knowledge=args['new_knowledge'])
+        db.session.add(chatbot_knowledge)
         db.session.commit()
+        
+        course = Course.query.filter_by(course_id=args['course_id']).first()
+        knowledge_string = ""
+        for knowledge in ChatbotDB.query.filter_by(course_id=args['course_id']).all():
+            knowledge_string += f"- {knowledge.knowledge}\n"
+        chatbot = ChatbotLLM(course, knowledge_string)
+        chatbot.update_knowledge(knowledge_string)
+        
         return {"message": "Chatbot knowledge base updated successfully"}, 201
 
 
@@ -155,4 +174,4 @@ api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
 api.add_resource(Modules, '/courses/<string:course_id>/modules')
 api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
 api.add_resource(Notes, '/notes/<int:lesson_id>')
-api.add_resource(Chatbot, '/chatbot/query', '/chatbot/train')
+api.add_resource(ChatbotResource, '/chatbot/query', '/chatbot/train')

@@ -11,7 +11,7 @@ export default {
     },
 
     methods: {
-        sendMessage() {
+        async sendMessage() {
             if (this.message === '') {
                 return
             }
@@ -20,15 +20,32 @@ export default {
                 message: this.message,
                 sender: 'user'
             });
+            const message = this.message;
             this.message = '';
-            
-            // TODO: Backend Call
+
             // Fetch Query Backend
-            const responseMessage = {
-                message: 'This is a default Chatbot message',
-                sender: 'chatbot'
-            };
-            this.messages.push(responseMessage);
+            const queryResponse = await fetch(`http://127.0.0.1:5000/api/v1/chatbot/query`, {
+                method: 'POST',
+                headers: {
+                    'Authentication-Token': sessionStorage.getItem('auth-token'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    course_id: this.courseID,
+                    query: message
+                })
+            });
+
+            const queryResponseData = await queryResponse.json();
+            
+            if (queryResponse.ok) {
+                this.messages.push({
+                    message: queryResponseData.response,
+                    sender: 'chatbot'
+                })
+            } else {
+                this.error = queryResponseData.message;
+            }
         },
     },
 
@@ -60,7 +77,7 @@ export default {
                                 <h5 class="bg-primary p-2 m-0 rounded-pill text-center text-light"><i class="bi bi-robot"></i></h5>
                             </div>
                             <div class="col d-flex justify-content-start">
-                                <span class="text-dark bg-body-secondary p-3 rounded-end-5 rounded-top-5 message" >
+                                <span class="text-start text-dark bg-body-secondary p-3 rounded-end-5 rounded-top-5 message" style="white-space: pre-wrap;">
                                     {{message.message}}
                                 </span>
                             </div>
@@ -69,7 +86,7 @@ export default {
                         <!-- User Message -->
                         <div class="row d-flex align-items-end" v-if="message.sender === 'user'">
                             <div class="col d-flex justify-content-end">
-                                <span class="text-light bg-primary p-3 rounded-start-5 rounded-top-5 message">
+                                <span class="text-light bg-primary p-3 rounded-start-5 rounded-top-5 message" style="white-space: pre-wrap;">
                                     {{message.message}}
                                 </span>
                             </div>
@@ -82,7 +99,7 @@ export default {
                 <div class="modal-footer bg-body-secondary text-center fst-italic text-muted">
                     <div class="input-group mb-3">
                         <input type="text" class="form-control rounded-3 me-2" v-model="message" placeholder="Ask pushPAK or just say Hi...">
-                        <button class="btn btn-primary rounded-circle" type="submit" id="sendButton"><i class="bi bi-send-fill" @click="sendMessage()"></i></button>
+                        <button class="btn btn-primary rounded-circle" type="submit" id="sendButton"  @click="sendMessage()"><i class="bi bi-send-fill"></i></button>
                     </div>
                     <p>Did you know, pushPAK stands for '<span class="fw-bold">push P</span>upils to <span class="fw-bold">A</span>ttain <span class="fw-bold">K</span>nowledge'?</p>
                 </div>
