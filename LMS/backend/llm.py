@@ -51,28 +51,6 @@ def code_error_explanation(chat_model=chat_model, code_block: str=None) -> str:
     return response.content
 
 
-def chatbot_query(chat_model=chat_model, query: str=None) -> str:
-    query_template = """You are a friendly helpful assistant who can reply to student's queries on behalf of the instructor. \
-    
-    Deadline for GrPA (Graded Programming Assignment) 8 has been extended to 8 Dec 2024, which is beyond the Quiz 2 date. However, Syllabus for Quiz 2 is still from weeks 1 to 8.
-    
-    Help solve the following query of a student: {query}
-    
-    Give the response in the following JSON format:\
-    "response": "your response"
-    
-    You can provide some helpful tips as a part of the response but remember not to provide boilerplate text, no explanation, no unnecessary text \
-    to explain the output and directly the json formatted data.
-    """
-    prompt_template = ChatPromptTemplate.from_template(query_template)
-
-    final_input_prompt = prompt_template.format_messages(query=query)
-
-    response = chat_model.invoke(final_input_prompt)
-
-    return response.content
-
-
 if __name__ == '__main__':
     sample_code = """
     print("Hello World")
@@ -80,6 +58,3 @@ if __name__ == '__main__':
     print(a)
     """
     print(code_error_explanation(chat_model, code_block=sample_code))
-    
-    query = "What is the deadline for GrPA 8?"
-    print(chatbot_query(chat_model, query=query))
