@@ -53,7 +53,7 @@ export default {
     },
 
     async mounted() {
-        const heightResizeInterval = setInterval(() => {
+            this.heightResizeInterval = setInterval(() => {
             const textarea = document.querySelector('textarea');
             const scratchpad = document.querySelector('iframe');
             textarea.rows = (scratchpad.clientHeight - 112) / 25.5;
@@ -73,6 +73,10 @@ export default {
             this.error = noteData.message;
         }
     },
+
+    beforeUnmount() {
+        clearInterval(this.heightResizeInterval);
+    }
 }
 </script>
 

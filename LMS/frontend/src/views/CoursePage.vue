@@ -97,7 +97,7 @@ export default {
                 </div>
             </div>
             <div class="col">
-                <router-view/>
+                <router-view :key="$route.fullPath"/>
             </div>
         </div>
     </div>
