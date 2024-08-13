@@ -3,10 +3,10 @@ from flask_security import Security, SQLAlchemyUserDatastore, auth_required, rol
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import marshal, fields
 from flask_cors import CORS
-from config import DevelopmentConfig
-from database import db, User, Role
-from api import api
-# from llm import video_summary
+from .config import DevelopmentConfig, TestingConfig
+from .database import db, User, Role
+from .api import api
+
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
@@ -30,8 +30,9 @@ with app.app_context():
                               email='instructor1@seekpp.com',
                               password=generate_password_hash('instructor1'),
                               roles=['instructor'])
-    
+
     db.session.commit()
+
 
 # API endpoint for Log in
 @app.post('/api/v1/login')
@@ -48,18 +49,19 @@ def login():
 
     if not user:
         return jsonify({"message": "User not found"}), 404
-    
+
     if check_password_hash(user.password, password):
         return jsonify({
-                        "message": "user logged in",
-                        "email": user.email,
-                        "username": user.username,
-                        "role": user.roles[0].name,
-                        "token": user.get_auth_token(),
-                        "id": user.id
-                    }), 200
+            "message": "user logged in",
+            "email": user.email,
+            "username": user.username,
+            "role": user.roles[0].name,
+            "token": user.get_auth_token(),
+            "id": user.id
+        }), 200
     else:
         return jsonify({"message": "Invalid password"}), 401
+
 
 # API endpoint for Register
 @app.post('/api/v1/register')
@@ -77,13 +79,13 @@ def register():
         return jsonify({"message": "Password is required"}), 400
     if not role:
         return jsonify({"message": "Role is required"}), 400
-    
+
     if role != 'student' and role != 'instructor':
         return jsonify({"message": "Invalid role"}), 400
 
     if datastore.find_user(email=email) or datastore.find_user(username=username):
         return jsonify({"message": "User already exists"}), 409
-    
+
     user = datastore.create_user(username=username,
                                  email=email,
                                  password=generate_password_hash(password),
@@ -92,6 +94,7 @@ def register():
     db.session.commit()
 
     return jsonify({"message": "User Registered Successfully!"}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)

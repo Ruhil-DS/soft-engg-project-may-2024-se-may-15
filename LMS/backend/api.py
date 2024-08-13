@@ -1,7 +1,7 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB
-from chatbot import Chatbot as ChatbotLLM
+from .database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB
+from .chatbot import Chatbot as ChatbotLLM
 
 api = Api(prefix='/api/v1')
 

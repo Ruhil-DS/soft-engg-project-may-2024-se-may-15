@@ -5,11 +5,13 @@ from flask_security import UserMixin, RoleMixin
 
 db = SQLAlchemy()
 
+
 # Association table between Users and Roles
 class RolesUsers(db.Model):
     __tablename__ = 'roles_users'
     user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'), primary_key=True)
     role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'), primary_key=True)
+
 
 # Model for Users
 class User(db.Model, UserMixin):
@@ -22,19 +24,22 @@ class User(db.Model, UserMixin):
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     roles = db.relationship('Role', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
 
+
 # Model for Roles (Student or Instructor)
 class Role(db.Model, RoleMixin):
     __tablename__ = 'role'
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
 
+
 # Model for Course
 class Course(db.Model):
     __tablename__ = 'course'
-    course_id = db.Column(db.String(8), primary_key=True)
+    course_id = db.Column(db.Integer, primary_key=True)
     course_name = db.Column(db.String(100), unique=True, nullable=False)
     course_description = db.Column(db.String(), nullable=False)
     modules = db.relationship('Module', backref='course', lazy=True)
+
 
 # Model for Module (Week)
 class Module(db.Model):
@@ -46,6 +51,7 @@ class Module(db.Model):
     lessons = db.relationship('Lesson', backref='module', lazy=True)
     assignments = db.relationship('Assignment', backref='module', lazy=True)
 
+
 # Model for Lesson (Video and Slides)
 class Lesson(db.Model):
     __tablename__ = 'lesson'
@@ -56,6 +62,7 @@ class Lesson(db.Model):
     video_url = db.Column(db.String(), nullable=False)
     slide_url = db.Column(db.String(), nullable=False)
 
+
 # Model for Notes (made by student)
 class Note(db.Model):
     __tablename__ = 'note'
@@ -64,12 +71,14 @@ class Note(db.Model):
     lesson_id = db.Column(db.Integer, db.ForeignKey('module.module_id'), nullable=False)
     note = db.Column(db.Text, nullable=False)
 
+
 # Enumerator for Assignment Types
 class AssignmentType(enum.Enum):
-    PA = 'pa'       # Practice Assignment (PA)
-    GA = 'ga'       # Graded Assignment (GA)
-    PrPA = 'prpa'   # Practice Programming Assignment (PrPA)
-    GrPA = 'grpa'   # Graded Programming Assignment (GrPA)
+    PA = 'pa'  # Practice Assignment (PA)
+    GA = 'ga'  # Graded Assignment (GA)
+    PrPA = 'prpa'  # Practice Programming Assignment (PrPA)
+    GrPA = 'grpa'  # Graded Programming Assignment (GrPA)
+
 
 # Model for Assignments
 class Assignment(db.Model):
@@ -80,10 +89,12 @@ class Assignment(db.Model):
     due_date = db.Column(db.DateTime(), nullable=False)
     questions = db.relationship('Question', backref='assignment', lazy=True)
 
+
 # Enumerator for Question Types - Open to Extension
 class QuestionType(enum.Enum):
     MCQ = 'mcq'
     PROGRAMMING = 'programming'
+
 
 # Model for Questions
 class Question(db.Model):
@@ -92,8 +103,9 @@ class Question(db.Model):
     assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.assignment_id'), nullable=False)
     question_type = db.Column(db.Enum(QuestionType), nullable=False)
     question = db.Column(db.Text, nullable=False)
-    options = db.relationship('Option', backref='question', lazy=True)          # for MCQ
-    test_cases = db.relationship('TestCase', backref='question', lazy=True)     # for Programming
+    options = db.relationship('Option', backref='question', lazy=True)  # for MCQ
+    test_cases = db.relationship('TestCase', backref='question', lazy=True)  # for Programming
+
 
 # Model for Options for MCQs
 class Option(db.Model):
@@ -103,10 +115,12 @@ class Option(db.Model):
     option = db.Column(db.Text, nullable=False)
     is_correct = db.Column(db.Boolean, default=False)
 
+
 # Enumerator for Test Case Types
 class TestCaseType(enum.Enum):
     PUBLIC = 'public'
     PRIVATE = 'private'
+
 
 # Model for Test Cases for Programming Questions
 class TestCase(db.Model):
@@ -116,6 +130,7 @@ class TestCase(db.Model):
     test_case_type = db.Column(db.Enum(TestCaseType), nullable=False)
     input_data = db.Column(db.Text, nullable=False)
     expected_output = db.Column(db.Text, nullable=False)
+
 
 # Model for Submissions
 class Submission(db.Model):
