@@ -38,14 +38,23 @@ module_fields = {
 
 class Modules(Resource):
     @auth_required('token')
-    def get(self, course_id):
-        modules = Module.query.filter_by(course_id=course_id).all()
-        if len(modules) == 0:
-            return {"message": "No Modules Found"}, 404
-        return {
-                "course_id": course_id,
-                "modules": marshal(modules, module_fields)
-            }, 200
+    def get(self, course_id, module_id=None):
+        if module_id is None:
+            modules = Module.query.filter_by(course_id=course_id).all()
+            if len(modules) == 0:
+                return {"message": "No Modules Found"}, 404
+            return {
+                    "course_id": course_id,
+                    "modules": marshal(modules, module_fields)
+                }, 200
+        else:
+            module = Module.query.filter_by(course_id=course_id, module_id=module_id).first()
+            if not module:
+                return {"message": "Module not found"}, 404
+            return {
+                    "course_id": course_id,
+                    "module": marshal(modules, module_fields)
+                }, 200
 
 
 class ContentField(fields.Raw):
@@ -205,11 +214,46 @@ class Translator(Resource):
         return get_translation(args['source_text'], args['target_language']), 200
 
 
-api.add_resource(Courses, '/courses', '/courses/<string:course_id>')
-api.add_resource(Modules, '/courses/<string:course_id>/modules')
-api.add_resource(Lessons, '/courses/<string:course_id>/modules/<int:module_id>/lessons', '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>')
-api.add_resource(Notes, '/notes/<int:lesson_id>')
-api.add_resource(ChatbotResource, '/chatbot/query', '/chatbot/train')
-api.add_resource(VideoSummarizer, '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>/generate-summary/video')
-api.add_resource(SlideSummarizer, '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>/generate-summary/slide')
-api.add_resource(Translator, '/translate')
+api.add_resource(
+    Courses,
+    '/courses',
+    '/courses/<string:course_id>'
+)
+
+api.add_resource(
+    Modules,
+    '/courses/<string:course_id>/modules',
+    '/courses/<string:course_id>/modules/<int:module_id>'
+)
+
+api.add_resource(
+    Lessons,
+    '/courses/<string:course_id>/modules/<int:module_id>/lessons',
+    '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>'
+)
+
+api.add_resource(
+    Notes,
+    '/notes/<int:lesson_id>'
+)
+
+api.add_resource(
+    ChatbotResource,
+    '/chatbot/query',
+    '/chatbot/train'
+)
+
+api.add_resource(
+    VideoSummarizer,
+    '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>/generate-summary/video'
+)
+
+api.add_resource(
+    SlideSummarizer,
+    '/courses/<string:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>/generate-summary/slide'
+)
+
+api.add_resource(
+    Translator,
+    '/translate'
+)

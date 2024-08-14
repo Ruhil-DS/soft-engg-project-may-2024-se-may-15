@@ -1,13 +1,20 @@
 <script>
 export default {
+    props: ['courseID'],
+
     data() {
         return {
             role: sessionStorage.getItem('role'),
-            isLoggedIn: sessionStorage.getItem('auth-token') ? true : false
+            isLoggedIn: sessionStorage.getItem('auth-token') ? true : false,
+            rerender: false,
         }
     },
 
     methods: {
+        getCourseID() {
+            return sessionStorage.getItem('course-id');    
+        },
+
         logout() {
             sessionStorage.removeItem('auth-token');
             sessionStorage.removeItem('role');
@@ -17,7 +24,7 @@ export default {
             this.$store.commit('resetState');
             this.$router.push({ path: '/login' });
         }
-    },
+    }
 }
 </script>
 
@@ -32,8 +39,12 @@ export default {
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
+                <div class="navbar-nav" :key="rerender">
                     <router-link class="nav-link" to="/">Home</router-link>
+
+                    <router-link class="nav-link" v-if="courseID" :to="`/course/${courseID}`">Course</router-link>
+
+                    <router-link class="nav-link" v-if="courseID" :to="`/assignment/${courseID}`">Assignments</router-link>
 
                     <!-- <router-link class="nav-link" to="/users" v-if="role === 'admin'">All Users</router-link>
 
