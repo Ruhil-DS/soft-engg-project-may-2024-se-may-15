@@ -12,3 +12,5 @@ langchain_community
 openai
 youtube-transcript-api
 transformers
+pypdf
+gdown

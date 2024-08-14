@@ -24,7 +24,7 @@ export default {
 
     methods: {
         computeFileID(lessonSlideUrl) {
-            this.fileID = lessonSlideUrl.split('https://drive.google.com/file/d/')[1].split('/view?usp=sharing')[0];
+            this.fileID = lessonSlideUrl.split('/d/')[1].split('/')[0];
         }
     },
 
@@ -62,7 +62,7 @@ export default {
     </div>
     <div class="row">
         <div class="col-8 p-0 ps-3 pe-3">
-            <iframe class="rounded-3" :src="`https://docs.google.com/viewer?srcid=${fileID}&pid=explorer&efh=false&a=v&chrome=false&embedded=true`" width="100%" :height="iframeHeight"></iframe>
+            <iframe class="rounded-3" :src="`https://drive.google.com/file/d/${fileID}/preview`" width="100%" :height="iframeHeight"></iframe>
         </div>
         <div class="col p-0">
             <Scratchpad :lessonID="lessonID"/>
