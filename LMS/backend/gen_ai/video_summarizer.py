@@ -12,7 +12,7 @@ model = ChatGroq(temperature=0.8, model="llama3-8b-8192")
 def get_video_summary(course, lesson):
     prompt_template = f"""
         You are given the transcript of a video lesson on the topic {lesson.lesson_name} for the course
-        {course.course_name}. Summarize the video content in a concise manner with about 100 words
+        {course.course_name}. Summarize the video content in a concise manner in about 100 words
         highlighting any specific computer science functions or concepts. You can breakdown the summary into multiple paragraphs, or even list down 5-10 quick key points for revising the concept under the heading 'Quick Key Points'.
         """
     prompt_template += """
