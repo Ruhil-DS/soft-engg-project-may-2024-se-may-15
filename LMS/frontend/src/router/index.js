@@ -7,6 +7,12 @@ import LessonContentPage from '../components/LessonContentPage.vue';
 import LessonVideoPage from '../components/LessonVideoPage.vue';
 import LessonSlidePage from '../components/LessonSlidePage.vue';
 import CourseDescription from '../components/CourseDescription.vue';
+import AssignmentPage from '../views/AssignmentPage.vue';
+import PracticeTheoryAssignment from '../components/PracticeTheoryAssignment.vue';
+import GradedTheoryAssignment from '../components/GradedTheoryAssignment.vue';
+import PracticeProgrammingAssignment from '../components/PracticeProgrammingAssignment.vue';
+import GradedProgrammingAssignment from '../components/GradedProgrammingAssignment.vue';
+import DefaultAssignment from '../components/DefaultAssignment.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +46,37 @@ const router = createRouter({
         }
       ]
     },
+    { path: '/assignment/:course_id',
+      name: 'AssignmentPage',
+      component: AssignmentPage,
+      children: [
+        {
+          path: 'module/:module_id/practice/theory',
+          component: PracticeTheoryAssignment,
+          name: 'PracticeTheoryAssignment'
+        },
+        {
+          path: 'module/:module_id/graded/theory',
+          component: GradedTheoryAssignment,
+          name: 'GradedTheoryAssignment'
+        },
+        {
+          path: 'module/:module_id/practice/programming',
+          component: PracticeProgrammingAssignment,
+          name: 'PracticeProgrammingAssignment'
+        },
+        {
+          path: 'module/:module_id/graded/programming',
+          component: GradedProgrammingAssignment,
+          name: 'GradedProgrammingAssignment'
+        },
+        {
+          path: '',
+          component: DefaultAssignment,
+          name: 'DefaultAssignment'
+        }
+      ]
+    }
   ]
 });
 

@@ -16,7 +16,8 @@ export default {
 
   data() {
     return {
-      rerender: true
+      rerender: false,
+      courseID: null,
     }
   },
 
@@ -24,9 +25,16 @@ export default {
     Navbar
   },
 
+  methods: {
+    rerenderer() {
+      this.courseID = sessionStorage.getItem('course-id')
+    }
+  },
+
   watch: {
         $route(to, from) {
             this.rerender = !this.rerender;
+            setTimeout(this.rerenderer, 0); // this.rerenderer(); 
         }
   },
 
@@ -35,7 +43,7 @@ export default {
 </script>
 
 <template>
-  <Navbar :key="rerender" />
+  <Navbar :key="rerender" :courseID="courseID"/>
 
   <RouterView />
 
