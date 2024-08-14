@@ -4,14 +4,14 @@ export default {
 
     data() {
         return {
-            
+
         };
     }
 };
 </script>
 
 <template>
-    <div class="p-4 border">
+    <div class="p-4 border-bottom border-2">
         <p class="fw-semibold pb-2 m-0">Q{{question.question_num}}.&nbsp;{{question.question}}</p>
         <div class="form-check ps-5 pb-2" v-for="(option, index) in question.options">
             <input class="form-check-input" type="radio" :name="`answer${question.question_num}`" :id="option.option_num">
