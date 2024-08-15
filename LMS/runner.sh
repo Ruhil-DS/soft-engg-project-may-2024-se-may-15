@@ -1,1 +1,10 @@
-# make this file into the main runner executable. 2 threads, one for Vue one for flask.
+#!/bin/bash
+cd frontend
+npm install
+echo "Starting frontend"
+npm run dev &
+cd ../backend
+pip install -r requirements.txt
+cd ../
+echo "Starting backend"
+python3 -m backend.main
