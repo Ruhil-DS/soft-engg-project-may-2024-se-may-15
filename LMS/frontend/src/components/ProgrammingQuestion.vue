@@ -21,8 +21,26 @@ export default {
 
     methods: {
         async speechToCode(transcript) {
-            console.log(transcript);
-            this.code = transcript;
+            const response = await fetch(`http://127.0.0.1:5000/api/v1/transcript-to-code`, {
+                method: 'POST',
+                headers: {
+                    'Authentication-Token': sessionStorage.getItem('auth-token'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    audio_transcript: transcript,
+                    coding_language: 'python',
+                    'question': this.question.question
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                this.code = responseData.formatted_code;
+            } else {
+                this.error = responseData.message;
+            }
         }
     }
 };
