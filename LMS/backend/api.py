@@ -1,6 +1,6 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, Question, Option, TestCase, TestCaseType
+from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, Question, QuestionType, Option, TestCase, TestCaseType
 from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
 from gen_ai.slide_summarizer import get_slide_summary
@@ -8,6 +8,7 @@ from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.question_generator import generate_theory_questions, generate_programming_questions
 from gen_ai.testcase_generator import generate_testcases
+from datetime import datetime
 
 api = Api(prefix='/api/v1')
 
@@ -269,6 +270,15 @@ class PA(Resource):
         
 
 class GA(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
+        self.parser.add_argument('assignment_type', type=str, required=True, help='Assignment Type is required')
+        self.parser.add_argument('assessment_type', type=str, required=True, help='Assessment Type is required')
+        self.parser.add_argument('due_date', type=str, required=True, help='Due Date is required')
+        self.parser.add_argument('questions', type=list, required=True, location='json', help='Questions is required')
+        super(GA, self).__init__()
+    
     @auth_required('token')
     def get(self, module_id):
         assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED, assignment_type=AssignmentType.THEORY).first()
@@ -284,10 +294,28 @@ class GA(Resource):
             "questions": marshal(assignment.questions, theory_question_fields)
         }, 200
     
-    # TODO: Implement
     @auth_required('token')
     def post(self, module_id):
+        args = self.parser.parse_args()
+
         module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+
+        ga = Assignment(module_id=module_id, assignment_type=AssignmentType.THEORY, assessment_type=AssessmentType.GRADED, due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
+        
+        for question in args['questions']:
+            new_question = Question(question_type=QuestionType.MCQ, question=question['question'])
+
+            for option in question['options']:
+                new_question.options.append(Option(option_num=option['option_num'], option=option['option'], is_correct=option['is_correct']))
+
+            ga.questions.append(new_question)
+        
+        db.session.add(ga)
+        db.session.commit()
+        
+        return {"message": "Graded assignment created successfully"}, 201
 
 
 test_case_fields = {
