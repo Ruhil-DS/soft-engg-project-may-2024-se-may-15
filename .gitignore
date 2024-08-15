@@ -34,10 +34,6 @@ coverage
 /LMS/backend/__pycache__
 /LMS/backend/gen_ai/__pycache__
 
-# TODO: Remove the following later while submission
-/LMS/backend/instance/
-/instance/
-
 # API KEY
 LMS/backend/.google_api
 LMS/assets/
