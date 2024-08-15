@@ -1,11 +1,12 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB
+from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, Question, Option, TestCase
 from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
 from gen_ai.slide_summarizer import get_slide_summary
 from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
+from gen_ai.question_generator import generate_theory_questions, generate_programming_questions
 
 api = Api(prefix='/api/v1')
 
@@ -228,6 +229,119 @@ class SpeechToCode(Resource):
         args = self.parser.parse_args()
         return get_converted_code(args['audio_transcript'], args['coding_language'], args['question']), 200
 
+options_fields = {
+    "option_num": fields.Integer,
+    "option": fields.String,
+    "is_correct": fields.Boolean
+}
+
+theory_question_fields = {
+    "question_id": fields.Integer,
+    "question": fields.String,
+}
+theory_question_fields['options'] = fields.List(fields.Nested(options_fields))
+
+class PA(Resource):
+    @auth_required('token')
+    def get(self, module_id):
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.THEORY).first()
+        
+        if assignment is None:
+            return {"message": "No practice assignment found"}, 404
+        
+        return {
+            "module_id": module_id,
+            "assignment_type": "theory",
+            "assessment_type": "practice",
+            "due_date": str(assignment.due_date),
+            "questions": marshal(assignment.questions, theory_question_fields)
+        }, 200
+    
+    # TODO: Combine with generator
+    @auth_required('token')
+    def post(self, module_id):
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+
+        questions = generate_theory_questions(module)
+        
+
+class GA(Resource):
+    @auth_required('token')
+    def get(self, module_id):
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED, assignment_type=AssignmentType.THEORY).first()
+        
+        if assignment is None:
+            return {"message": "No graded assignment found"}, 404
+        
+        return {
+            "module_id": module_id,
+            "assignment_type": "theory",
+            "assessment_type": "graded",
+            "due_date": str(assignment.due_date),
+            "questions": marshal(assignment.questions, theory_question_fields)
+        }, 200
+    
+    # TODO: Implement
+    @auth_required('token')
+    def post(self, module_id):
+        module = Module.query.filter_by(module_id=module_id).first()
+
+# FIXME: Not Implemented Correctly
+programming_question_fields = {
+    "question_id": fields.Integer,
+    "question": fields.String,
+}
+programming_question_fields['options'] = fields.List(fields.Nested(options_fields))
+
+class PrPA(Resource):
+    @auth_required('token')
+    def get(self, module_id):
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.PROGRAMMING).first()
+        
+        if assignment is None:
+            return {"message": "No practice programming assignment found"}, 404
+        
+        return {
+            "module_id": module_id,
+            "assignment_type": "programming",
+            "assessment_type": "practice",
+            "due_date": str(assignment.due_date),
+            "questions": marshal(assignment.questions, programming_question_fields)
+        }, 200
+    
+    # TODO: Combine with generator
+    @auth_required('token')
+    def post(self, module_id):
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+
+        questions = generate_theory_questions(module)
+        
+
+class GrPA(Resource):
+    @auth_required('token')
+    def get(self, module_id):
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED, assignment_type=AssignmentType.PROGRAMMING).first()
+        
+        if assignment is None:
+            return {"message": "No graded programming assignment found"}, 404
+        
+        return {
+            "module_id": module_id,
+            "assignment_type": "programming",
+            "assessment_type": "graded",
+            "due_date": str(assignment.due_date),
+            "questions": marshal(assignment.questions, programming_question_fields)
+        }, 200
+    
+    # TODO: Implement
+    @auth_required('token')
+    def post(self, module_id):
+        module = Module.query.filter_by(module_id=module_id).first()
+
 
 api.add_resource(
     Courses,
@@ -276,4 +390,26 @@ api.add_resource(
 api.add_resource(
     SpeechToCode,
     '/transcript-to-code'
+)
+
+api.add_resource(
+    PA,
+    '/assignment/practice/theory/<int:module_id>',
+    '/assignment/practice/theory/<int:module_id>/generate'
+)
+
+api.add_resource(
+    GA,
+    '/assignment/graded/theory/<int:module_id>'
+)
+
+api.add_resource(
+    PrPA,
+    '/assignment/practice/programming/<int:module_id>',
+    '/assignment/practice/programming/<int:module_id>/generate'
+)
+
+api.add_resource(
+    GrPA,
+    '/assignment/graded/programming/<int:module_id>'
 )
