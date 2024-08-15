@@ -5,6 +5,7 @@ from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
 from gen_ai.slide_summarizer import get_slide_summary
 from gen_ai.translator import get_translation
+from gen_ai.text_to_code_converter import get_converted_code
 
 api = Api(prefix='/api/v1')
 
@@ -214,6 +215,20 @@ class Translator(Resource):
         return get_translation(args['source_text'], args['target_language']), 200
 
 
+class SpeechToCode(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('audio_transcript', type=str, required=True, help='Audio Transcript is required')
+        self.parser.add_argument('coding_language', type=str, required=True, help='Coding Language is required')
+        self.parser.add_argument('question', type=str, required=True, help='Question is required')
+        super(SpeechToCode, self).__init__()
+
+    @auth_required('token')
+    def post(self):
+        args = self.parser.parse_args()
+        return get_converted_code(args['audio_transcript'], args['coding_language'], args['question']), 200
+
+
 api.add_resource(
     Courses,
     '/courses',
@@ -256,4 +271,9 @@ api.add_resource(
 api.add_resource(
     Translator,
     '/translate'
+)
+
+api.add_resource(
+    SpeechToCode,
+    '/transcript-to-code'
 )
