@@ -7,6 +7,7 @@ from gen_ai.slide_summarizer import get_slide_summary
 from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.question_generator import generate_theory_questions, generate_programming_questions
+from gen_ai.testcase_generator import generate_testcases
 
 api = Api(prefix='/api/v1')
 
@@ -311,7 +312,7 @@ programming_question_fields = {
 programming_question_fields['test_cases'] = TestCasesFields(attribute='question_id')
 
 class PrPA(Resource):
-    # @auth_required('token')
+    @auth_required('token')
     def get(self, module_id):
         assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.PROGRAMMING).first()
         
