@@ -8,7 +8,7 @@ export default {
             moduleID: this.$route.params.module_id,
             questions: [
                 {
-                    "question_num": 1,
+                    "question_id": 1,
                     "question": "Which of the following is an example of a list?",
                     "options": [
                         {
@@ -31,7 +31,7 @@ export default {
                     "correct_option_num": 1
                 },
                 {
-                    "question_num": 2,
+                    "question_id": 2,
                     "question": "Which of the following is an example of a set?",
                     "options": [
                         {
@@ -54,7 +54,7 @@ export default {
                     "correct_option_num": 2
                 },
                 {
-                    "question_num": 3,
+                    "question_id": 3,
                     "question": "Which of the following is an example of a tuple?",
                     "options": [
                         {
@@ -113,7 +113,7 @@ export default {
             <span class="fs-6 ps-4 text-danger">Due Date: {{due_date}}</span>
         </div>
         <div class="row bg-white rounded-3 ms-4 mt-2 me-4">
-            <TheoryQuestion v-for="question in questions" :question="question"/>
+            <TheoryQuestion v-for="(question, index) in questions" :question="question" :index="index"/>
         </div>
         <div class="row ms-4 mb-2 me-4 p-4">
             <p class="fw-semibold p-0 pb-2 m-0" v-if="grade">Grade: {{grade}}</p>
