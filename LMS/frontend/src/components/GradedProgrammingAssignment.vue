@@ -76,7 +76,7 @@ export default {
 <template>
     <div class="container bg-body-secondary rounded-3">
         <div class="row m-4">
-            <span class="fs-4 ps-4 pt-4 fw-medium">Practice Programming Assignment (PrPA) {{moduleID}}</span>
+            <span class="fs-4 ps-4 pt-4 fw-medium">Graded Programming Assignment (GrPA) {{moduleID}}</span>
             <span class="fs-6 ps-4 text-danger">Due Date: {{due_date}}</span>
         </div>
         <div class="row bg-white rounded-3 ms-4 mt-2 me-4">

@@ -13,7 +13,7 @@ export default {
 
     methods: {
         goToAssignment() {
-            if (this.moduleIDChosen === -1 || this.assessmentTypeChosen === '' || this.assignmentTypeChosen === '') {
+            if (this.moduleIDChosen == -1 || this.assessmentTypeChosen === '' || this.assignmentTypeChosen === '') {
                 alert('Invalid Assignment Choice!');
                 return;
             }
