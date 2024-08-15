@@ -13,6 +13,7 @@ import GradedTheoryAssignment from '../components/GradedTheoryAssignment.vue';
 import PracticeProgrammingAssignment from '../components/PracticeProgrammingAssignment.vue';
 import GradedProgrammingAssignment from '../components/GradedProgrammingAssignment.vue';
 import DefaultAssignment from '../components/DefaultAssignment.vue';
+import RevisionPage from '../views/RevisionPage.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -76,7 +77,8 @@ const router = createRouter({
           name: 'DefaultAssignment'
         }
       ]
-    }
+    },
+    { path: '/revise-pain-points/:course_id', component: RevisionPage, name: 'RevisionPage' }
   ]
 });
 

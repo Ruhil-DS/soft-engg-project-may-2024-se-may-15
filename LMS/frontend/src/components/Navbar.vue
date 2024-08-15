@@ -46,6 +46,8 @@ export default {
 
                     <router-link class="nav-link" v-if="courseID" :to="`/assignment/${courseID}`">Assignments</router-link>
 
+                    <router-link class="nav-link" v-if="courseID" :to="`/revise-pain-points/${courseID}`">Pain Points and Revision</router-link>
+
                     <!-- <router-link class="nav-link" to="/users" v-if="role === 'admin'">All Users</router-link>
 
                     <router-link class="nav-link" to="/create-category"
