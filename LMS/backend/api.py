@@ -1,6 +1,6 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_accepted, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, Question, Option, TestCase
+from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, Question, Option, TestCase, TestCaseType
 from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
 from gen_ai.slide_summarizer import get_slide_summary
@@ -288,15 +288,30 @@ class GA(Resource):
     def post(self, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
 
-# FIXME: Not Implemented Correctly
+
+test_case_fields = {
+    "test_input": fields.String(attribute='input_data'),
+    "expected_output": fields.String(attribute='expected_output')
+}
+
+class TestCasesFields(fields.Raw):
+    def format(self, id):
+        public_test_cases = TestCase.query.filter_by(question_id=id, test_case_type=TestCaseType.PUBLIC).all()
+        private_test_cases = TestCase.query.filter_by(question_id=id, test_case_type=TestCaseType.PRIVATE).all()
+
+        return {
+            "public": marshal(public_test_cases, test_case_fields),
+            "private": marshal(private_test_cases, test_case_fields)
+        }
+
 programming_question_fields = {
     "question_id": fields.Integer,
     "question": fields.String,
 }
-programming_question_fields['options'] = fields.List(fields.Nested(options_fields))
+programming_question_fields['test_cases'] = TestCasesFields(attribute='question_id')
 
 class PrPA(Resource):
-    @auth_required('token')
+    # @auth_required('token')
     def get(self, module_id):
         assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.PROGRAMMING).first()
         
