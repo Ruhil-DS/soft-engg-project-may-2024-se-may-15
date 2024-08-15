@@ -64,18 +64,22 @@ class Note(db.Model):
     lesson_id = db.Column(db.Integer, db.ForeignKey('module.module_id'), nullable=False)
     note = db.Column(db.Text, nullable=False)
 
+# Enumerator for Assessment Types
+class AssessmentType(enum.Enum):
+    PRACTICE = 'practice'       # Practice
+    GRADED = 'graded'           # Graded
+
 # Enumerator for Assignment Types
 class AssignmentType(enum.Enum):
-    PA = 'pa'       # Practice Assignment (PA)
-    GA = 'ga'       # Graded Assignment (GA)
-    PrPA = 'prpa'   # Practice Programming Assignment (PrPA)
-    GrPA = 'grpa'   # Graded Programming Assignment (GrPA)
+    THEORY = 'theory'             # Theory Assignment with MCQs
+    PROGRAMMING = 'programming'   # Programming Assignment
 
 # Model for Assignments
 class Assignment(db.Model):
     __tablename__ = 'assignment'
     assignment_id = db.Column(db.Integer, primary_key=True)
     module_id = db.Column(db.String(8), db.ForeignKey('module.module_id'), nullable=False)
+    assessment_type = db.Column(db.Enum(AssessmentType), nullable=False)
     assignment_type = db.Column(db.Enum(AssignmentType), nullable=False)
     due_date = db.Column(db.DateTime(), nullable=False)
     questions = db.relationship('Question', backref='assignment', lazy=True)
@@ -99,6 +103,7 @@ class Question(db.Model):
 class Option(db.Model):
     __tablename__ = 'option'
     option_id = db.Column(db.Integer, primary_key=True)
+    option_num = db.Column(db.Integer, nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('question.question_id'), nullable=False)
     option = db.Column(db.Text, nullable=False)
     is_correct = db.Column(db.Boolean, default=False)
