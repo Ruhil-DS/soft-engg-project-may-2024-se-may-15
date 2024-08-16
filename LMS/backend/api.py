@@ -9,7 +9,7 @@ from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.question_generator import generate_theory_questions, generate_programming_questions
 from gen_ai.testcase_generator import generate_testcases
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from flask import jsonify
 
 api = Api(prefix='/api/v1')
@@ -268,14 +268,42 @@ class PA(Resource):
             "questions": marshal(assignment.questions, theory_question_fields)
         }, 200
 
-    # TODO: Combine with generator
     @auth_required('token')
     def post(self, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
             return {"message": "Module not found"}, 404
+        
+        course = Course.query.filter_by(course_id=module.course_id).first()
+        
+        pa = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.THEORY).first()
+        
+        if not pa:
+            pa = Assignment(module_id=module_id,
+                        assignment_type=AssignmentType.THEORY,
+                        assessment_type=AssessmentType.PRACTICE,
+                        due_date=datetime.today() + timedelta(days=7))
+        
+        while True:
+            try:
+                questions = generate_theory_questions(course, module)
+                break
+            except Exception as e:
+                pass
+        
+        for question in questions.__root__:
+            new_question = Question(question_type=QuestionType.MCQ,
+                                    question=question.question)
+            
+            for option in question.options:
+                new_question.options.append(Option(option_num=option.option_num, option=option.option, is_correct=option.is_correct))
+            
+            pa.questions.append(new_question)
+        
+        db.session.add(pa)
+        db.session.commit()
 
-        questions = generate_theory_questions(module)
+        return {"message": "Practice assignment created successfully"}, 201
 
 
 class GA(Resource):
