@@ -268,8 +268,6 @@ class PA(Resource):
 
         questions = generate_theory_questions(module)
         
-        
-        
 
 class GA(Resource):
     def __init__(self):
@@ -421,6 +419,70 @@ class GrPA(Resource):
         return {"message": "Graded programming assignment created successfully"}, 201
 
 
+class PASubmission(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        
+        # sample parser argument
+        # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        
+        super(PASubmission, self).__init__()
+    
+    # FIXME: Commented the auth required for testing, uncomment post implementation
+    # @auth_required('token')
+    def post(self, module_id):
+        # Use 'current_user' to access properties of the user calling the endpoint
+        pass
+    
+
+class GASubmission(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        
+        # sample parser argument
+        # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        
+        super(GASubmission, self).__init__()
+    
+    # FIXME: Commented the auth required for testing, uncomment post implementation
+    # @auth_required('token')
+    def post(self, module_id):
+        # Use 'current_user' to access properties of the user calling the endpoint
+        pass
+
+
+class PrPASubmission(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        
+        # sample parser argument
+        # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        
+        super(PrPASubmission, self).__init__()
+    
+    # FIXME: Commented the auth required for testing, uncomment post implementation
+    # @auth_required('token')
+    def post(self, module_id):
+        # Use 'current_user' to access properties of the user calling the endpoint
+        pass
+
+
+class GrPASubmission(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        
+        # sample parser argument
+        # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        
+        super(GrPASubmission, self).__init__()
+    
+    # FIXME: Commented the auth required for testing, uncomment post implementation
+    # @auth_required('token')
+    def post(self, module_id):
+        # Use 'current_user' to access properties of the user calling the endpoint
+        pass
+
+
 api.add_resource(
     Courses,
     '/courses',
@@ -490,4 +552,24 @@ api.add_resource(
 api.add_resource(
     GrPA,
     '/assignment/graded/programming/<int:module_id>'
+)
+
+api.add_resource(
+    PASubmission,
+    '/assignment/practice/theory/<int:module_id>/submit'
+)
+
+api.add_resource(
+    GASubmission,
+    '/assignment/graded/theory/<int:module_id>/submit'
+)
+
+api.add_resource(
+    PrPASubmission,
+    '/assignment/practice/programming/<int:module_id>/submit'
+)
+
+api.add_resource(
+    GrPASubmission,
+    '/assignment/graded/programming/<int:module_id>/submit'
 )
