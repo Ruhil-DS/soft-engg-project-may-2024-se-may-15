@@ -32,8 +32,8 @@ So that I can quickly identify the areas for improvement and start focusing upon
 6. As a student,
 I want mentor-like guidance while coding that suggests me the possible ways to proceed (in
 the form of hints, syntax suggestions, and/or code snippets; one step/hint at a time) when
- I am stuck,  and can review my code to explain the errors and help me debug in real-time,
- So that I can improve my ability to think algorithmically and get comfortable in coding.
+I am stuck,  and can review my code to explain the errors and help me debug in real-time,
+So that I can improve my ability to think algorithmically and get comfortable in coding.
 
 7. As a student,
 I want a feature that can identify my learning pain points through performance analysis and
@@ -69,7 +69,6 @@ strategies to address these issues effectively and guide students accordingly.
 12. As an instructor,
 I want a feature that can help me generate about 5-10 custom test cases, that cover most corner
 cases, for the graded programming assignments that I set, 
-
 So that I can efficiently manage assessment tasks, and provide timely feedback to students, and
 address student queries on the discussion forum.
 
