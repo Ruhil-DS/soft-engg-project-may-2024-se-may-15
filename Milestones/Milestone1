@@ -1,0 +1,68 @@
+Following User Stories are developed based on the Learner Journey Map , keeping the
+SMART guidelines in mind:
+1. As a student,
+I want a feature that can summarize the contents of the lecture videos into 1-3 paragraphs
+highlighting 5-10 key points,
+So that I can efficiently review the material and focus on understanding the concepts rather
+than devoting hours to manually write notes.
+2. As a student,
+I want a feature that can generate concise summaries of the lecture slides, highlighting the
+essential information in 1-3 paragraphs highlighting 5-10 key points,
+So that I have access to revision material that I can quickly review before exams.
+3. As a student,
+I want a feature that generates concise summaries from videos/slides in my regional language,
+highlighting the essential information in 1-3 paragraphs highlighting 5-10 key points,
+So that I can understand the material better and overcome any form of language barrier.
+4. As a student,
+I want a feature that can generate a set of 10 questions on-demand, pertaining to the week’s
+content, as practice assignments, practice programming assignments, and mock exams,
+So that I can continuously test my theoretical knowledge and hone my coding skills at will to
+be well prepared for the graded assignments, quizzes, and programming exams.
+5. As a student,
+I want a feature that can provide me with instant feedback (marking what and where I might
+have gone wrong, and providing me with tips to avoid such mistakes in the future) on my
+activity questions, practice assignments, and graded assignments (after deadline passes),
+So that I can quickly identify the areas for improvement and start focusing upon them.
+6. As a student,
+I want mentor-like guidance while coding that suggests me the possible ways to proceed (in
+the form of hints, syntax suggestions, and/or code snippets; one step/hint at a time) when I am
+stuck, and can review my code to explain the errors and help me debug in real-time,
+6
+So that I can improve my ability to think algorithmically and get comfortable in coding.
+7. As a student,
+I want a feature that can identify my learning pain points through performance analysis and
+help me devise a possible plan of action to study/revise those concepts,
+So that I can primarily focus on my areas of concern and receive targeted help to enhance my
+skills.
+8. As a student with limited motor skills,
+I want a feature that offers speech-to-text as well as speech-to-code functionality, in which I
+can speak my code and the tool will automatically format and run it as per the coding language,
+So that I can easily input answers, take notes, and even practice coding, which otherwise
+would have been extremely difficult, if not impossible, for me.
+9. As a student,
+I want an intelligent chatbot that can instantly answer quick questions about course content,
+assignment deadlines, exam dates; suggest study plans; recommended additional resources,
+including videos, articles, and books related to the topic,
+So that I can resolve such doubts immediately without waiting for an instructor's response on
+the discussion forum and even explore more materials to improve my understanding further.
+10. As an instructor,
+I want a feature that can generate activity and practice (theory and programming) questions as
+per the students’ requests,
+So that students can exercise their knowledge and skills continuously without worrying about
+my availability.
+11. As an instructor,
+I want a feature that can provide instant feedback on student’s assignments (based on the
+nature of the assignment: theory or programming, practice or graded),
+So that I can identify common learning pain points across the class and tailor my teaching
+strategies to address these issues effectively and guide students accordingly.
+12. As an instructor,
+I want a feature that can help me generate about 5-10 custom test cases, that cover most corner
+cases, for the graded programming assignments that I set,
+7
+So that I can efficiently manage assessment tasks, provide timely feedback to students, and
+address student queries on the discussion forum.
+13. As an instructor,
+I want an intelligent chatbot that can answer frequently asked questions from students,
+So that students can get instant solutions and I can save time on repetitive queries to focus on
+more complex tasks, including planning following weeks’ content and conducting remedial
+sessions for struggling students.
