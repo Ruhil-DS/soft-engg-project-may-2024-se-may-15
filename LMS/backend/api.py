@@ -409,7 +409,22 @@ class PrPA(Resource):
         if not module:
             return {"message": "Module not found"}, 404
 
-        questions = generate_theory_questions(module)
+        course = Course.query.filter_by(course_id=module.course_id).first()
+        
+        prpa = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.THEORY).first()
+        
+        if not prpa:
+            prpa = Assignment(module_id=module_id,
+                        assignment_type=AssignmentType.PROGRAMMING,
+                        assessment_type=AssessmentType.PRACTICE,
+                        due_date=datetime.today() + timedelta(days=7))
+        
+        while True:
+            try:
+                questions = generate_theory_questions(course, module)
+                break
+            except Exception as e:
+                pass
 
 
 class GrPA(Resource):
