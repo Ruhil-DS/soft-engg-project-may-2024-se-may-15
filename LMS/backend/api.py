@@ -268,6 +268,8 @@ class PA(Resource):
 
         questions = generate_theory_questions(module)
         
+        
+        
 
 class GA(Resource):
     def __init__(self):
