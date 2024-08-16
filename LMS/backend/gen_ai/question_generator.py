@@ -48,5 +48,43 @@ def generate_theory_questions(course, module):
     
     return chain.invoke({"course_name": course.course_name, "module_name": module.module_name})
 
-def generate_programming_questions(module):
-    pass
+
+class ProgrammingQuestionList(BaseModel):
+    __root__: List[str] = Field(description="list of programming questions for the assignment")
+
+def generate_programming_questions(course, module):
+    prompt_template = """
+        You work for an instructor who teaches the course {course_name}. You are tasked to design programming questions for the course module {module_name} so that students can practice the concepts covered in the module.
+        
+        Design 2 programming questions for the module in JSON format. Make sure the questions are related to topics covered in the module. All questions must start with 'Define a function...' so that it is easy for the backend to run and check the code.
+        
+        Just return the set of questions as a List of Questions in JSON. Do not provide boilerplate text, no explanation, no unnecessary text to explain the output, not even the 'Here is the response' like text.
+        
+        Here are the format instructions for the output:
+        
+        {format_instructions}
+        """
+    
+    parser = PydanticOutputParser(pydantic_object=ProgrammingQuestionList)
+    
+    prompt = PromptTemplate(
+        template=prompt_template,
+        input_variables=["course_name", "module_name"],
+        partial_variables={"format_instructions": parser.get_format_instructions()},
+    )
+    
+    chain = prompt | model | parser
+    
+    return chain.invoke({"course_name": course, "module_name": module})
+
+index = 0
+while True:
+    print(index)
+    index += 1
+    try:
+        questions = generate_programming_questions('Programming in Python', 'Week 6 - Lists, Sets, and Tuples')
+        break
+    except Exception as e:
+        pass
+    
+print(questions)
