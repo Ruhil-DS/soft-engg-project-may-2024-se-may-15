@@ -1,14 +1,15 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_required, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, \
-    Question, QuestionType, Option, TestCase, TestCaseType, Submission, User
+from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, \
+    AssessmentType, AssignmentType, Question, QuestionType, Option, TestCase, TestCaseType, \
+    Submission, User
 from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
 from gen_ai.slide_summarizer import get_slide_summary
 from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
-from gen_ai.question_generator import generate_theory_questions, generate_programming_questions
-from gen_ai.testcase_generator import generate_testcases
+from gen_ai.assignment_generator import generate_theory_questions, generate_programming_questions, \
+    generate_testcases
 from datetime import datetime, timezone, timedelta
 from flask import jsonify
 

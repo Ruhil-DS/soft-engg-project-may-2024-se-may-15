@@ -76,3 +76,7 @@ def generate_programming_questions(course, module):
     chain = prompt | model | parser
     
     return chain.invoke({"course_name": course.course_name, "module_name": module.module_name})
+
+
+def generate_testcases(module, question):
+    pass
