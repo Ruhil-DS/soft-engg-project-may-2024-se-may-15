@@ -1,5 +1,5 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
-from flask_security import auth_required, roles_accepted, current_user
+from flask_security import auth_required, roles_required, current_user
 from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, Question, QuestionType, Option, TestCase, TestCaseType
 from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
@@ -169,7 +169,7 @@ class ChatbotResource(Resource):
     
     # Chatbot Train Endpoint
     @auth_required('token')
-    @roles_accepted('instructor')
+    @roles_required('instructor')
     def put(self):
         args = self.put_parser.parse_args()
         chatbot_knowledge = ChatbotDB(course_id=args['course_id'], knowledge=args['new_knowledge'])
@@ -295,6 +295,7 @@ class GA(Resource):
         }, 200
     
     @auth_required('token')
+    @roles_required('instructor')
     def post(self, module_id):
         args = self.parser.parse_args()
 
@@ -390,7 +391,8 @@ class GrPA(Resource):
             "questions": marshal(assignment.questions, programming_question_fields)
         }, 200
     
-    # @auth_required('token')
+    @auth_required('token')
+    @roles_required('instructor')
     def post(self, module_id):
         args = self.parser.parse_args()
 
