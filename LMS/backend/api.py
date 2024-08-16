@@ -426,9 +426,9 @@ class PASubmission(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         
-        # Example arguments for the submission
+        # Arguments for the submission
         self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
-        self.parser.add_argument('assignment_id', type=str, required=False, help='Assignment id')
+        self.parser.add_argument('assignment_id', type=int, required=True, help='Assignment ID is required')
 
         super(PASubmission, self).__init__()
 
@@ -438,7 +438,7 @@ class PASubmission(Resource):
     def post(self, assignment_id):
         args = self.parser.parse_args()
         submission_content = args['submission']
-        submission_date = args.get('submission_date', datetime.now(timezone.utc))()
+        submission_date = args.get('submission_date', datetime.now(timezone.utc))
 
         # Assuming 'assignment_id' is a valid identifier for the assignment
         assignment = Assignment.query.get(assignment_id)
@@ -452,12 +452,12 @@ class PASubmission(Resource):
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
 
-        # Save the submission to the database (this part is based on your ORM model)
-        submission = Submission(
+      
+        submission = Submission (
             user_id=user.id,
             assignment_id=assignment.id,
             submission=submission_content,
-            submission_date=submission_date
+            submission_date=submission_date,
             grade = 'not graded'
         )
 
