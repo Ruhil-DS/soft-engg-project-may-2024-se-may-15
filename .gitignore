@@ -32,10 +32,7 @@ coverage
 
 /LMS/backend/.venv/
 /LMS/backend/__pycache__
-
-# TODO: Remove the following later while submission
-/LMS/backend/instance/
-/instance/
+/LMS/backend/gen_ai/__pycache__
 
 # API KEY
 LMS/backend/.google_api

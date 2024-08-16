@@ -9,3 +9,8 @@ google-generativeai
 langchain-google-genai
 langchain-groq
 langchain_community
+openai
+youtube-transcript-api
+transformers
+pypdf
+gdown

@@ -3,9 +3,9 @@ from flask_security import Security, SQLAlchemyUserDatastore, auth_required, rol
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import marshal, fields
 from flask_cors import CORS
-from .config import DevelopmentConfig, TestingConfig
-from .database import db, User, Role
-from .api import api
+from config import DevelopmentConfig, TestingConfig
+from database import db, User, Role
+from api import api
 
 
 app = Flask(__name__)

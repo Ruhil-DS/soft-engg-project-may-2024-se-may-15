@@ -35,7 +35,7 @@ export default {
 
 <template>
     <div class='d-flex justify-content-center'>
-        <div class="mb-3 p-5 bg-body-secondary rounded-3">
+        <div class="m-3 p-5 bg-body-secondary rounded-3">
             <p class="h3">Sign Up</p>
             <br>
             <label for="username" class="form-label">Username</label>
