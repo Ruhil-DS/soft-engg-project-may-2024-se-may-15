@@ -514,34 +514,89 @@ class GASubmission(Resource):
 
 class PrPASubmission(Resource):
     def __init__(self):
-        self.parser = reqparse.RequestParser()
+        self.parser = reqparse.RequestParser() 
         
-        # sample parser argument
-        # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        # Arguments for the submission
+        self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
+        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
         
         super(PrPASubmission, self).__init__()
     
-    # FIXME: Commented the auth required for testing, uncomment post implementation
-    # @auth_required('token')
+    @auth_required('token')
+    @roles_required('student')
     def post(self, module_id):
-        # Use 'current_user' to access properties of the user calling the endpoint
-        pass
+        args = self.parser.parse_args()
+        submission_content = args['submission']
+        submission_date = args.get('submission_date', datetime.now(timezone.utc))
+        assignment=Assignment.query.get(module_id)
+        
+        if not assignment:
+            return {'message': 'Assignment not found'}, 404
 
+        user = User.query.get(user_id=current_user.id)
+
+        # Check if the content is not empty
+        if not submission_content:
+            return {'message': 'Empty Submission'}, 404
+
+      
+        submission = Submission (
+            user_id=user.id,
+            assignment_id=assignment.id,
+            submission=submission_content,
+            submission_date=submission_date,
+            grade = 'not graded'
+        )
+
+        db.session.add(submission)
+        db.session.commit()
+        
+        return {"message": "Practice Programming Assignment Solution submitted successfully"}, 201    
 
 class GrPASubmission(Resource):
     def __init__(self):
-        self.parser = reqparse.RequestParser()
+        self.parser = reqparse.RequestParser() 
         
+        # Arguments for the submission
+        self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
+        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
+        
+        super(GrPASubmission, self).__init__()
         # sample parser argument
         # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
         
-        super(GrPASubmission, self).__init__()
+      
     
-    # FIXME: Commented the auth required for testing, uncomment post implementation
-    # @auth_required('token')
+    @auth_required('token')
+    @roles_required('student')
     def post(self, module_id):
-        # Use 'current_user' to access properties of the user calling the endpoint
-        pass
+        args = self.parser.parse_args()
+        submission_content = args['submission']
+        submission_date = args.get('submission_date', datetime.now(timezone.utc))
+        assignment=Assignment.query.get(module_id)
+        
+        if not assignment:
+            return {'message': 'Assignment not found'}, 404
+
+        user = User.query.get(user_id=current_user.id)
+
+        # Check if the content is not empty
+        if not submission_content:
+            return {'message': 'Empty Submission'}, 404
+
+      
+        submission = Submission (
+            user_id=user.id,
+            assignment_id=assignment.id,
+            submission=submission_content,
+            submission_date=submission_date,
+            grade = 'not graded'
+        )
+
+        db.session.add(submission)
+        db.session.commit()
+        
+        return {"message": "Graded Programming Assignment Solution submitted successfully"}, 201    
 
 
 api.add_resource(
