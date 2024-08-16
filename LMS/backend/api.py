@@ -428,7 +428,7 @@ class PASubmission(Resource):
         
         # Example arguments for the submission
         self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
-        self.parser.add_argument('Assignment_id', type=str, required=False, help='Assignment id')
+        self.parser.add_argument('assignment_id', type=str, required=False, help='Assignment id')
 
         super(PASubmission, self).__init__()
 
@@ -438,7 +438,7 @@ class PASubmission(Resource):
     def post(self, assignment_id):
         args = self.parser.parse_args()
         submission_content = args['submission']
-        submission_date = args.get('submission_date', datetime.now(timezone.utc))())
+        submission_date = args.get('submission_date', datetime.now(timezone.utc))()
 
         # Assuming 'assignment_id' is a valid identifier for the assignment
         assignment = Assignment.query.get(assignment_id)
