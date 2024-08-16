@@ -366,6 +366,15 @@ class PrPA(Resource):
         
 
 class GrPA(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
+        self.parser.add_argument('assignment_type', type=str, required=True, help='Assignment Type is required')
+        self.parser.add_argument('assessment_type', type=str, required=True, help='Assessment Type is required')
+        self.parser.add_argument('due_date', type=str, required=True, help='Due Date is required')
+        self.parser.add_argument('questions', type=list, required=True, location='json', help='Questions is required')
+        super(GrPA, self).__init__()
+    
     @auth_required('token')
     def get(self, module_id):
         assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED, assignment_type=AssignmentType.PROGRAMMING).first()
@@ -381,10 +390,31 @@ class GrPA(Resource):
             "questions": marshal(assignment.questions, programming_question_fields)
         }, 200
     
-    # TODO: Implement
-    @auth_required('token')
+    # @auth_required('token')
     def post(self, module_id):
+        args = self.parser.parse_args()
+
         module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+
+        grpa = Assignment(module_id=module_id, assignment_type=AssignmentType.PROGRAMMING, assessment_type=AssessmentType.GRADED, due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
+        
+        for question in args['questions']:
+            new_question = Question(question_type=QuestionType.PROGRAMMING, question=question['question'])
+
+            for test_case in question['test_cases']['public']:
+                new_question.test_cases.append(TestCase(test_case_type=TestCaseType.PUBLIC, input_data=test_case['test_input'], expected_output=test_case['expected_output']))
+                
+            for test_case in question['test_cases']['private']:
+                new_question.test_cases.append(TestCase(test_case_type=TestCaseType.PRIVATE, input_data=test_case['test_input'], expected_output=test_case['expected_output']))
+
+            grpa.questions.append(new_question)
+        
+        db.session.add(grpa)
+        db.session.commit()
+        
+        return {"message": "Graded programming assignment created successfully"}, 201
 
 
 api.add_resource(
