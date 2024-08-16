@@ -1,6 +1,7 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_required, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, Question, QuestionType, Option, TestCase, TestCaseType, Submission, User
+from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, \
+    Question, QuestionType, Option, TestCase, TestCaseType, Submission, User
 from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
 from gen_ai.slide_summarizer import get_slide_summary
@@ -11,15 +12,14 @@ from gen_ai.testcase_generator import generate_testcases
 from datetime import datetime, timezone
 from flask import jsonify
 
-
 api = Api(prefix='/api/v1')
-
 
 course_fields = {
     "course_id": fields.String,
     "course_name": fields.String,
     "course_description": fields.String
 }
+
 
 class Courses(Resource):
     @auth_required('token')
@@ -29,7 +29,7 @@ class Courses(Resource):
             if len(courses) == 0:
                 return {"message": "No Courses Found"}, 404
             return marshal(courses, course_fields), 200
-        
+
         course = Course.query.filter_by(course_id=course_id).first()
         if not course:
             return {"message": "Course not found"}, 404
@@ -42,6 +42,7 @@ module_fields = {
     "module_description": fields.String
 }
 
+
 class Modules(Resource):
     @auth_required('token')
     def get(self, course_id, module_id=None):
@@ -50,33 +51,35 @@ class Modules(Resource):
             if len(modules) == 0:
                 return {"message": "No Modules Found"}, 404
             return {
-                    "course_id": course_id,
-                    "modules": marshal(modules, module_fields)
-                }, 200
+                "course_id": course_id,
+                "modules": marshal(modules, module_fields)
+            }, 200
         else:
             module = Module.query.filter_by(course_id=course_id, module_id=module_id).first()
             if not module:
                 return {"message": "Module not found"}, 404
             return {
-                    "course_id": course_id,
-                    "module": marshal(modules, module_fields)
-                }, 200
+                "course_id": course_id,
+                "module": marshal(module, module_fields)
+            }, 200
 
 
 class ContentField(fields.Raw):
     def format(self, id):
         lesson = Lesson.query.get(id)
         return {
-                'content': lesson.lesson_description,
-                'video_url': lesson.video_url,
-                'slide_url': lesson.slide_url
-            }
+            'content': lesson.lesson_description,
+            'video_url': lesson.video_url,
+            'slide_url': lesson.slide_url
+        }
+
 
 lesson_fields = {
     'lesson_id': fields.Integer,
     'lesson_name': fields.String,
     'content': ContentField(attribute='lesson_id')
 }
+
 
 class Lessons(Resource):
     @auth_required('token')
@@ -85,21 +88,21 @@ class Lessons(Resource):
         module = Module.query.filter_by(course_id=course_id, module_id=module_id).first()
         if not course or not module:
             return {"message": "Course or Module not found"}, 404
-        
+
         if module.course_id != course.course_id:
             return {"message": "Module not found"}, 404
-        
+
         # Fetch all lessons
         if lesson_id is None:
             lessons = Lesson.query.filter_by(module_id=module_id).all()
             if len(lessons) == 0:
                 return {"message": "No Lessons Found"}, 404
             return {
-                    "course_id": course_id,
-                    "module_id": module_id,
-                    "lessons": marshal(lessons, lesson_fields)
-                }, 200
-        
+                "course_id": course_id,
+                "module_id": module_id,
+                "lessons": marshal(lessons, lesson_fields)
+            }, 200
+
         # Fetch a particular lesson
         else:
             lesson = Lesson.query.filter_by(module_id=module_id, lesson_id=lesson_id).first()
@@ -115,6 +118,7 @@ note_fields = {
     'note': fields.String
 }
 
+
 class Notes(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -127,7 +131,7 @@ class Notes(Resource):
         if note is None:
             return {"message": "No Note Found"}, 404
         return marshal(note, note_fields), 200
-    
+
     @auth_required('token')
     def post(self, lesson_id):
         args = self.parser.parse_args()
@@ -147,28 +151,28 @@ class ChatbotResource(Resource):
         self.post_parser = reqparse.RequestParser()
         self.post_parser.add_argument('course_id', type=str, required=True, help='Course ID is required')
         self.post_parser.add_argument('query', type=str, required=True, help='Query is required')
-        
+
         self.put_parser = reqparse.RequestParser()
         self.put_parser.add_argument('course_id', type=str, required=True, help='Course ID is required')
         self.put_parser.add_argument('new_knowledge', type=str, required=True, help='Knowledge is required')
-        
+
         super(ChatbotResource, self).__init__()
-    
+
     # Chatbot Query Endpoint
     @auth_required('token')
     def post(self):
         args = self.post_parser.parse_args()
-        
+
         course = Course.query.filter_by(course_id=args['course_id']).first()
         knowledge_string = ""
         for knowledge in ChatbotDB.query.filter_by(course_id=args['course_id']).all():
             knowledge_string += f"- {knowledge.knowledge}\n"
-        
+
         chatbot = ChatbotLLM(course, knowledge_string)
         response = chatbot.query(args['query'])
-        
+
         return {"query": args['query'], "response": response}, 200
-    
+
     # Chatbot Train Endpoint
     @auth_required('token')
     @roles_required('instructor')
@@ -177,14 +181,14 @@ class ChatbotResource(Resource):
         chatbot_knowledge = ChatbotDB(course_id=args['course_id'], knowledge=args['new_knowledge'])
         db.session.add(chatbot_knowledge)
         db.session.commit()
-        
+
         course = Course.query.filter_by(course_id=args['course_id']).first()
         knowledge_string = ""
         for knowledge in ChatbotDB.query.filter_by(course_id=args['course_id']).all():
             knowledge_string += f"- {knowledge.knowledge}\n"
         chatbot = ChatbotLLM(course, knowledge_string)
         chatbot.update_knowledge(knowledge_string)
-        
+
         return {"message": "Chatbot knowledge base updated successfully"}, 201
 
 
@@ -193,7 +197,7 @@ class VideoSummarizer(Resource):
     def get(self, course_id, module_id, lesson_id):
         course = Course.query.filter_by(course_id=course_id).first()
         lesson = Lesson.query.filter_by(module_id=module_id, lesson_id=lesson_id).first()
-        
+
         return get_video_summary(course, lesson), 200
 
 
@@ -202,7 +206,7 @@ class SlideSummarizer(Resource):
     def get(self, course_id, module_id, lesson_id):
         course = Course.query.filter_by(course_id=course_id).first()
         lesson = Lesson.query.filter_by(module_id=module_id, lesson_id=lesson_id).first()
-        
+
         return get_slide_summary(course, lesson), 200
 
 
@@ -212,7 +216,7 @@ class Translator(Resource):
         self.parser.add_argument('source_text', type=str, required=True, help='Source Text is required')
         self.parser.add_argument('target_language', type=str, required=True, help='Target Language is required')
         super(Translator, self).__init__()
-    
+
     @auth_required('token')
     def post(self):
         args = self.parser.parse_args()
@@ -233,6 +237,7 @@ class SpeechToCode(Resource):
         args = self.parser.parse_args()
         return get_converted_code(args['audio_transcript'], args['coding_language'], args['question']), 200
 
+
 options_fields = {
     "option_num": fields.Integer,
     "option": fields.String,
@@ -245,14 +250,16 @@ theory_question_fields = {
 }
 theory_question_fields['options'] = fields.List(fields.Nested(options_fields))
 
+
 class PA(Resource):
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.THEORY).first()
-        
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE,
+                                                assignment_type=AssignmentType.THEORY).first()
+
         if assignment is None:
             return {"message": "No practice assignment found"}, 404
-        
+
         return {
             "module_id": module_id,
             "assignment_type": "theory",
@@ -260,7 +267,7 @@ class PA(Resource):
             "due_date": str(assignment.due_date),
             "questions": marshal(assignment.questions, theory_question_fields)
         }, 200
-    
+
     # TODO: Combine with generator
     @auth_required('token')
     def post(self, module_id):
@@ -269,7 +276,7 @@ class PA(Resource):
             return {"message": "Module not found"}, 404
 
         questions = generate_theory_questions(module)
-        
+
 
 class GA(Resource):
     def __init__(self):
@@ -280,14 +287,15 @@ class GA(Resource):
         self.parser.add_argument('due_date', type=str, required=True, help='Due Date is required')
         self.parser.add_argument('questions', type=list, required=True, location='json', help='Questions is required')
         super(GA, self).__init__()
-    
+
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED, assignment_type=AssignmentType.THEORY).first()
-        
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED,
+                                                assignment_type=AssignmentType.THEORY).first()
+
         if assignment is None:
             return {"message": "No graded assignment found"}, 404
-        
+
         return {
             "module_id": module_id,
             "assignment_type": "theory",
@@ -295,7 +303,7 @@ class GA(Resource):
             "due_date": str(assignment.due_date),
             "questions": marshal(assignment.questions, theory_question_fields)
         }, 200
-    
+
     @auth_required('token')
     @roles_required('instructor')
     def post(self, module_id):
@@ -305,19 +313,22 @@ class GA(Resource):
         if not module:
             return {"message": "Module not found"}, 404
 
-        ga = Assignment(module_id=module_id, assignment_type=AssignmentType.THEORY, assessment_type=AssessmentType.GRADED, due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
-        
+        ga = Assignment(module_id=module_id, assignment_type=AssignmentType.THEORY,
+                        assessment_type=AssessmentType.GRADED,
+                        due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
+
         for question in args['questions']:
             new_question = Question(question_type=QuestionType.MCQ, question=question['question'])
 
             for option in question['options']:
-                new_question.options.append(Option(option_num=option['option_num'], option=option['option'], is_correct=option['is_correct']))
+                new_question.options.append(
+                    Option(option_num=option['option_num'], option=option['option'], is_correct=option['is_correct']))
 
             ga.questions.append(new_question)
-        
+
         db.session.add(ga)
         db.session.commit()
-        
+
         return {"message": "Graded assignment created successfully"}, 201
 
 
@@ -325,6 +336,7 @@ test_case_fields = {
     "test_input": fields.String(attribute='input_data'),
     "expected_output": fields.String(attribute='expected_output')
 }
+
 
 class TestCasesFields(fields.Raw):
     def format(self, id):
@@ -336,20 +348,23 @@ class TestCasesFields(fields.Raw):
             "private": marshal(private_test_cases, test_case_fields)
         }
 
+
 programming_question_fields = {
     "question_id": fields.Integer,
     "question": fields.String,
 }
 programming_question_fields['test_cases'] = TestCasesFields(attribute='question_id')
 
+
 class PrPA(Resource):
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.PROGRAMMING).first()
-        
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE,
+                                                assignment_type=AssignmentType.PROGRAMMING).first()
+
         if assignment is None:
             return {"message": "No practice programming assignment found"}, 404
-        
+
         return {
             "module_id": module_id,
             "assignment_type": "programming",
@@ -357,7 +372,7 @@ class PrPA(Resource):
             "due_date": str(assignment.due_date),
             "questions": marshal(assignment.questions, programming_question_fields)
         }, 200
-    
+
     # TODO: Combine with generator
     @auth_required('token')
     def post(self, module_id):
@@ -366,7 +381,7 @@ class PrPA(Resource):
             return {"message": "Module not found"}, 404
 
         questions = generate_theory_questions(module)
-        
+
 
 class GrPA(Resource):
     def __init__(self):
@@ -377,14 +392,15 @@ class GrPA(Resource):
         self.parser.add_argument('due_date', type=str, required=True, help='Due Date is required')
         self.parser.add_argument('questions', type=list, required=True, location='json', help='Questions is required')
         super(GrPA, self).__init__()
-    
+
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED, assignment_type=AssignmentType.PROGRAMMING).first()
-        
+        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED,
+                                                assignment_type=AssignmentType.PROGRAMMING).first()
+
         if assignment is None:
             return {"message": "No graded programming assignment found"}, 404
-        
+
         return {
             "module_id": module_id,
             "assignment_type": "programming",
@@ -392,7 +408,7 @@ class GrPA(Resource):
             "due_date": str(assignment.due_date),
             "questions": marshal(assignment.questions, programming_question_fields)
         }, 200
-    
+
     @auth_required('token')
     @roles_required('instructor')
     def post(self, module_id):
@@ -402,37 +418,41 @@ class GrPA(Resource):
         if not module:
             return {"message": "Module not found"}, 404
 
-        grpa = Assignment(module_id=module_id, assignment_type=AssignmentType.PROGRAMMING, assessment_type=AssessmentType.GRADED, due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
-        
+        grpa = Assignment(module_id=module_id, assignment_type=AssignmentType.PROGRAMMING,
+                          assessment_type=AssessmentType.GRADED,
+                          due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
+
         for question in args['questions']:
             new_question = Question(question_type=QuestionType.PROGRAMMING, question=question['question'])
 
             for test_case in question['test_cases']['public']:
-                new_question.test_cases.append(TestCase(test_case_type=TestCaseType.PUBLIC, input_data=test_case['test_input'], expected_output=test_case['expected_output']))
-                
+                new_question.test_cases.append(
+                    TestCase(test_case_type=TestCaseType.PUBLIC, input_data=test_case['test_input'],
+                             expected_output=test_case['expected_output']))
+
             for test_case in question['test_cases']['private']:
-                new_question.test_cases.append(TestCase(test_case_type=TestCaseType.PRIVATE, input_data=test_case['test_input'], expected_output=test_case['expected_output']))
+                new_question.test_cases.append(
+                    TestCase(test_case_type=TestCaseType.PRIVATE, input_data=test_case['test_input'],
+                             expected_output=test_case['expected_output']))
 
             grpa.questions.append(new_question)
-        
+
         db.session.add(grpa)
         db.session.commit()
-        
-        return {"message": "Graded programming assignment created successfully"}, 201
 
+        return {"message": "Graded programming assignment created successfully"}, 201
 
 
 class PASubmission(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
-        
+
         # Arguments for the submission
         self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
         self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
 
         super(PASubmission, self).__init__()
 
-
     @auth_required('token')
     @roles_required('student')
     def post(self, module_id):
@@ -451,34 +471,32 @@ class PASubmission(Resource):
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
 
-      
-        submission = Submission (
+        submission = Submission(
             user_id=user.id,
             assignment_id=assignment.id,
             submission=submission_content,
             submission_date=submission_date,
-            grade = 'not graded'
+            grade='not graded'
         )
 
         db.session.add(submission)
         db.session.commit()
-        
+
         return {"message": "Practice Assignment Solution submitted successfully"}, 201
 
 
-class GASubmission(Resource): 
-    
+class GASubmission(Resource):
+
     def __init__(self):
 
         self.parser = reqparse.RequestParser()
-        
+
         # Arguments for the submission
         self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
         self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
 
         super(GASubmission, self).__init__()
 
-
     @auth_required('token')
     @roles_required('student')
     def post(self, module_id):
@@ -497,39 +515,38 @@ class GASubmission(Resource):
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
 
-      
-        submission = Submission (
+        submission = Submission(
             user_id=user.id,
             assignment_id=assignment.id,
             submission=submission_content,
             submission_date=submission_date,
-            grade = 'not graded'
+            grade='not graded'
         )
 
         db.session.add(submission)
         db.session.commit()
-        
+
         return {"message": "Graded Assignment Solution submitted successfully"}, 201
 
 
 class PrPASubmission(Resource):
     def __init__(self):
-        self.parser = reqparse.RequestParser() 
-        
+        self.parser = reqparse.RequestParser()
+
         # Arguments for the submission
         self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
         self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
-        
+
         super(PrPASubmission, self).__init__()
-    
+
     @auth_required('token')
     @roles_required('student')
     def post(self, module_id):
         args = self.parser.parse_args()
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        assignment=Assignment.query.get(module_id)
-        
+        assignment = Assignment.query.get(module_id)
+
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
@@ -539,42 +556,40 @@ class PrPASubmission(Resource):
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
 
-      
-        submission = Submission (
+        submission = Submission(
             user_id=user.id,
             assignment_id=assignment.id,
             submission=submission_content,
             submission_date=submission_date,
-            grade = 'not graded'
+            grade='not graded'
         )
 
         db.session.add(submission)
         db.session.commit()
-        
-        return {"message": "Practice Programming Assignment Solution submitted successfully"}, 201    
+
+        return {"message": "Practice Programming Assignment Solution submitted successfully"}, 201
+
 
 class GrPASubmission(Resource):
     def __init__(self):
-        self.parser = reqparse.RequestParser() 
-        
+        self.parser = reqparse.RequestParser()
+
         # Arguments for the submission
         self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
         self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
-        
+
         super(GrPASubmission, self).__init__()
         # sample parser argument
         # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
-        
-      
-    
+
     @auth_required('token')
     @roles_required('student')
     def post(self, module_id):
         args = self.parser.parse_args()
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        assignment=Assignment.query.get(module_id)
-        
+        assignment = Assignment.query.get(module_id)
+
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
@@ -584,19 +599,18 @@ class GrPASubmission(Resource):
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
 
-      
-        submission = Submission (
+        submission = Submission(
             user_id=user.id,
             assignment_id=assignment.id,
             submission=submission_content,
             submission_date=submission_date,
-            grade = 'not graded'
+            grade='not graded'
         )
 
         db.session.add(submission)
         db.session.commit()
-        
-        return {"message": "Graded Programming Assignment Solution submitted successfully"}, 201    
+
+        return {"message": "Graded Programming Assignment Solution submitted successfully"}, 201
 
 
 api.add_resource(
