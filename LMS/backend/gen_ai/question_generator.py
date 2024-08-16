@@ -75,16 +75,4 @@ def generate_programming_questions(course, module):
     
     chain = prompt | model | parser
     
-    return chain.invoke({"course_name": course, "module_name": module})
-
-index = 0
-while True:
-    print(index)
-    index += 1
-    try:
-        questions = generate_programming_questions('Programming in Python', 'Week 6 - Lists, Sets, and Tuples')
-        break
-    except Exception as e:
-        pass
-    
-print(questions)
+    return chain.invoke({"course_name": course.course_name, "module_name": module.module_name})
