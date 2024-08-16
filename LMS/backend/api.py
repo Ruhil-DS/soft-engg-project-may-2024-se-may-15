@@ -488,7 +488,10 @@ class PASubmission(Resource):
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
 
-        assignment = Assignment.query.get(module_id)
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
+                                                assignment_type=AssignmentType.THEORY).first()
+        
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
@@ -532,7 +535,10 @@ class GASubmission(Resource):
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
 
-        assignment = Assignment.query.get(module_id)
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
+                                                assignment_type=AssignmentType.THEORY).first()
+        
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
@@ -573,7 +579,10 @@ class PrPASubmission(Resource):
         args = self.parser.parse_args()
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        assignment = Assignment.query.get(module_id)
+        
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
+                                                assignment_type=AssignmentType.PROGRAMMING).first()
 
         if not assignment:
             return {'message': 'Assignment not found'}, 404
@@ -616,7 +625,10 @@ class GrPASubmission(Resource):
         args = self.parser.parse_args()
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        assignment = Assignment.query.get(module_id)
+        
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
+                                                assignment_type=AssignmentType.PROGRAMMING).first()
 
         if not assignment:
             return {'message': 'Assignment not found'}, 404
