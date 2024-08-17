@@ -896,6 +896,7 @@ class CodeHelp(Resource):
             "code_help": code_help.suggestion
         }
 
+
 api.add_resource(
     Courses,
     '/courses',
