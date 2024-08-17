@@ -11,8 +11,9 @@ from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.assignment_generator import generate_theory_questions, generate_programming_questions, \
     generate_test_cases
 from gen_ai.feedback_generator import generate_theory_feedback, generate_programming_feedback, generate_code_help
+from code_runner import run_code
 from datetime import datetime, timezone, timedelta
-from flask import jsonify
+import json
 
 api = Api(prefix='/api/v1')
 
@@ -374,6 +375,7 @@ class GA(Resource):
 
 
 test_case_fields = {
+    "test_case_id": fields.Integer(attribute='test_case_id'),
     "test_input": fields.String(attribute='input_data'),
     "expected_output": fields.String(attribute='expected_output')
 }
@@ -542,15 +544,10 @@ class GrPA(Resource):
 class PASubmission(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
-
-        # Arguments for the submission
-        self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
-        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
-
+        self.parser.add_argument('submission', type=list, required=True, location='json', help='Submission content is required')
         super(PASubmission, self).__init__()
 
     @auth_required('token')
-    @roles_required('student')
     def post(self, module_id):
         args = self.parser.parse_args()
         submission_content = args['submission']
@@ -563,25 +560,53 @@ class PASubmission(Resource):
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
-        # Get the current user (requires jwt_required to be enabled)
-        user = User.query.get(user_id=current_user.id)
-
         # Check if the content is not empty
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
-
+        
+        grade = 0
+        
+        for sub in submission_content:
+            q = Question.query.filter_by(question_id=sub['question_id']).first()
+            if q is None:
+                return {'message': 'Question not found'}, 404
+            for o in q.options:
+                if o.is_correct:
+                    if o.option_num == sub['chosen_option']:
+                        grade += 1
+                    else:
+                        break
+        
+        grade = f'{grade}/{len(assignment.questions)}'
+        
+        submission = Submission.query.filter_by(user_id=current_user.id,
+                                                assignment_id=assignment.assignment_id).first()
+        
+        if submission:
+            submission.submission = str(submission_content)
+            submission.submission_date = submission_date
+            submission.grade = grade
+            db.session.commit()
+            return {
+                "message": "Practice Assignment Submission updated successfully",
+                "grade": grade
+            }, 200
+        
         submission = Submission(
-            user_id=user.id,
-            assignment_id=assignment.id,
-            submission=submission_content,
+            user_id=current_user.id,
+            assignment_id=assignment.assignment_id,
+            submission=str(submission_content),
             submission_date=submission_date,
-            grade='not graded'
+            grade=grade
         )
 
         db.session.add(submission)
         db.session.commit()
 
-        return {"message": "Practice Assignment Solution submitted successfully"}, 201
+        return {
+            "message": "Practice Assignment Submission submitted successfully",
+            "grade": grade
+        }, 200
 
 
 class GASubmission(Resource):
@@ -589,15 +614,11 @@ class GASubmission(Resource):
     def __init__(self):
 
         self.parser = reqparse.RequestParser()
-
-        # Arguments for the submission
-        self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
-        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
+        self.parser.add_argument('submission', type=list, required=True, location='json', help='Submission content is required')
 
         super(GASubmission, self).__init__()
 
     @auth_required('token')
-    @roles_required('student')
     def post(self, module_id):
         args = self.parser.parse_args()
         submission_content = args['submission']
@@ -610,42 +631,68 @@ class GASubmission(Resource):
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
-        # Get the current user (requires jwt_required to be enabled)
-        user = User.query.get(user_id=current_user.id)
-
         # Check if the content is not empty
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
 
+        grade = 0
+        
+        for sub in submission_content:
+            q = Question.query.filter_by(question_id=sub['question_id']).first()
+            if q is None:
+                return {'message': 'Question not found'}, 404
+            for o in q.options:
+                if o.is_correct:
+                    if o.option_num == sub['chosen_option']:
+                        grade += 1
+                    else:
+                        break
+        
+        grade = f'{grade}/{len(assignment.questions)}'
+        
+        submission = Submission.query.filter_by(user_id=current_user.id,
+                                                assignment_id=assignment.assignment_id).first()
+        
+        if submission:
+            submission.submission = str(submission_content)
+            submission.submission_date = submission_date
+            submission.grade = grade
+            db.session.commit()
+            return {
+                "message": "Graded Assignment Submission updated successfully",
+                "grade": grade
+            }, 200
+        
         submission = Submission(
-            user_id=user.id,
-            assignment_id=assignment.id,
-            submission=submission_content,
+            user_id=current_user.id,
+            assignment_id=assignment.assignment_id,
+            submission=str(submission_content),
             submission_date=submission_date,
-            grade='not graded'
+            grade=grade
         )
 
         db.session.add(submission)
         db.session.commit()
 
-        return {"message": "Graded Assignment Solution submitted successfully"}, 201
+        return {
+            "message": "Graded Assignment Solution submitted successfully",
+            "grade": grade    
+        }, 201
 
 
 class PrPASubmission(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
-
-        # Arguments for the submission
-        self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
-        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
+        self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        self.parser.add_argument('code_submission', type=str, required=True, help='Code Submission is required')
 
         super(PrPASubmission, self).__init__()
 
     @auth_required('token')
-    @roles_required('student')
     def post(self, module_id):
         args = self.parser.parse_args()
-        submission_content = args['submission']
+        question = Question.query.filter_by(question_id=args['question_id']).first()
+        code_submission = args['code_submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
         
         assignment = Assignment.query.filter_by(module_id=module_id,
@@ -655,43 +702,94 @@ class PrPASubmission(Resource):
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
-        user = User.query.get(user_id=current_user.id)
-
         # Check if the content is not empty
-        if not submission_content:
+        if not code_submission:
             return {'message': 'Empty Submission'}, 404
 
+        test_cases = question.test_cases
+        
+        run_result = run_code(code_submission, test_cases)
+        
+        public_grade = 0
+        public_count = 0
+        private_grade = 0
+        private_count = 0
+        for result in run_result:
+            test_case = TestCase.query.filter_by(test_case_id=result['test_case_id']).first()
+            if test_case.test_case_type == TestCaseType.PUBLIC:
+                public_count += 1
+                if result['result'] == test_case.expected_output:
+                    public_grade += 1
+            if test_case.test_case_type == TestCaseType.PRIVATE:
+                private_count += 1
+                if result['result'] == test_case.expected_output:
+                    private_grade += 1
+        
+        public_grade = f'{public_grade}/{public_count}'
+        private_grade = f'{private_grade}/{private_count}'
+        
+        submission = Submission.query.filter_by(user_id=current_user.id,
+                                                assignment_id=assignment.assignment_id).first()
+        
+        if submission:
+            submission_content = eval(submission.submission)
+            for sub in submission_content:
+                if sub['question_id'] == question.question_id:
+                    sub['code_submission'] = code_submission
+                    break
+            
+            submission.submission = str(submission_content)
+            submission.submission_date = submission_date
+            submission.grade = str({
+                "public_grade": public_grade,
+                "private_grade": private_grade
+            })
+            db.session.commit()
+            return {
+                "message": "Practice Programming Assignment Submission updated successfully",
+                "public_grade": public_grade,
+                "private_grade": private_grade
+            }, 200
+        
+        submission_content = [{
+            "question_id": question.question_id,
+            "code_submission": code_submission
+        }]
+        
         submission = Submission(
-            user_id=user.id,
-            assignment_id=assignment.id,
-            submission=submission_content,
+            user_id=current_user.id,
+            assignment_id=assignment.assignment_id,
+            submission=str(submission_content),
             submission_date=submission_date,
-            grade='not graded'
+            grade=str({
+                "public_grade": public_grade,
+                "private_grade": private_grade
+            })
         )
 
         db.session.add(submission)
         db.session.commit()
 
-        return {"message": "Practice Programming Assignment Solution submitted successfully"}, 201
+        return {
+            "message": "Practice Programming Assignment Submission submitted successfully",
+            "public_grade": public_grade,
+            "private_grade": private_grade
+        }, 201
 
 
 class GrPASubmission(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
-
-        # Arguments for the submission
-        self.parser.add_argument('submission', type=str, required=True, help='Submission content is required')
-        self.parser.add_argument('module_id', type=int, required=True, help='Module ID is required')
+        self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        self.parser.add_argument('code_submission', type=str, required=True, help='Code Submission is required')
 
         super(GrPASubmission, self).__init__()
-        # sample parser argument
-        # self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
 
     @auth_required('token')
-    @roles_required('student')
     def post(self, module_id):
         args = self.parser.parse_args()
-        submission_content = args['submission']
+        question = Question.query.filter_by(question_id=args['question_id']).first()
+        code_submission = args['code_submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
         
         assignment = Assignment.query.filter_by(module_id=module_id,
@@ -701,24 +799,79 @@ class GrPASubmission(Resource):
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
-        user = User.query.get(user_id=current_user.id)
-
         # Check if the content is not empty
-        if not submission_content:
+        if not code_submission:
             return {'message': 'Empty Submission'}, 404
 
+        test_cases = question.test_cases
+        
+        run_result = run_code(code_submission, test_cases)
+        
+        public_grade = 0
+        public_count = 0
+        private_grade = 0
+        private_count = 0
+        for result in run_result:
+            test_case = TestCase.query.filter_by(test_case_id=result['test_case_id']).first()
+            if test_case.test_case_type == TestCaseType.PUBLIC:
+                public_count += 1
+                if result['result'] == test_case.expected_output:
+                    public_grade += 1
+            if test_case.test_case_type == TestCaseType.PRIVATE:
+                private_count += 1
+                if result['result'] == test_case.expected_output:
+                    private_grade += 1
+        
+        public_grade = f'{public_grade}/{public_count}'
+        private_grade = f'{private_grade}/{private_count}'
+        
+        submission = Submission.query.filter_by(user_id=current_user.id,
+                                                assignment_id=assignment.assignment_id).first()
+        
+        if submission:
+            submission_content = eval(submission.submission)
+            for sub in submission_content:
+                if sub['question_id'] == question.question_id:
+                    sub['code_submission'] = code_submission
+                    break
+            
+            submission.submission = str(submission_content)
+            submission.submission_date = submission_date
+            submission.grade = str({
+                "public_grade": public_grade,
+                "private_grade": private_grade
+            })
+            db.session.commit()
+            return {
+                "message": "Graded Programming Assignment Submission updated successfully",
+                "public_grade": public_grade,
+                "private_grade": private_grade
+            }, 200
+        
+        submission_content = [{
+            "question_id": question.question_id,
+            "code_submission": code_submission
+        }]
+        
         submission = Submission(
-            user_id=user.id,
-            assignment_id=assignment.id,
-            submission=submission_content,
+            user_id=current_user.id,
+            assignment_id=assignment.assignment_id,
+            submission=str(submission_content),
             submission_date=submission_date,
-            grade='not graded'
+            grade=str({
+                "public_grade": public_grade,
+                "private_grade": private_grade
+            })
         )
 
         db.session.add(submission)
         db.session.commit()
 
-        return {"message": "Graded Programming Assignment Solution submitted successfully"}, 201
+        return {
+            "message": "Graded Programming Assignment Submission submitted successfully",
+            "public_grade": public_grade,
+            "private_grade": private_grade
+        }, 201
 
 
 class TestCaseGenerator(Resource):
@@ -897,6 +1050,40 @@ class CodeHelp(Resource):
         }
 
 
+class CodeRunner(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("question_id", type=int, required=True, help="Question ID is required")
+        self.parser.add_argument("code", type=str, required=True, help="Code is required")
+    
+    @auth_required('token')
+    def post(self):
+        args = self.parser.parse_args()
+        
+        question = Question.query.filter_by(question_id=args['question_id']).first()
+        code = args['code']
+        
+        test_cases = question.test_cases
+        
+        run_result = run_code(code, test_cases)
+        
+        public_grade = 0
+        public_count = 0
+        for result in run_result:
+            test_case = TestCase.query.filter_by(test_case_id=result['test_case_id']).first()
+            if test_case.test_case_type == TestCaseType.PUBLIC:
+                public_count += 1
+                if result['result'] == test_case.expected_output:
+                    public_grade += 1
+        
+        public_grade = f'{public_grade}/{public_count}'
+        
+        return {
+            "result":run_result,
+            "public_grade": public_grade
+        }, 200
+
+
 api.add_resource(
     Courses,
     '/courses',
@@ -1001,4 +1188,9 @@ api.add_resource(
 api.add_resource(
     CodeHelp,
     '/assignment/practice/programming/<int:module_id>/code-help'
+)
+
+api.add_resource(
+    CodeRunner,
+    '/run-code'
 )
