@@ -729,8 +729,8 @@ class TestCaseGenerator(Resource):
         
         super(TestCaseGenerator, self).__init__()
     
-    # @auth_required('token')
-    # @roles_required('instructor')
+    @auth_required('token')
+    @roles_required('instructor')
     def post(self, module_id):
         args = self.parser.parse_args()
         
