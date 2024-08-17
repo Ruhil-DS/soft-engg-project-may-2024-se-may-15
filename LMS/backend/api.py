@@ -10,6 +10,7 @@ from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.assignment_generator import generate_theory_questions, generate_programming_questions, \
     generate_test_cases
+from gen_ai.feedback_generator import generate_theory_feedback, generate_programming_feedback, generate_code_help
 from datetime import datetime, timezone, timedelta
 from flask import jsonify
 
@@ -720,6 +721,182 @@ class GrPASubmission(Resource):
         return {"message": "Graded Programming Assignment Solution submitted successfully"}, 201
 
 
+class TestCaseGenerator(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('question', type=str, required=True, help='Question is required')
+        self.parser.add_argument('num_public_test_cases', type=int, required=True, help='Number of public test cases is required')
+        self.parser.add_argument('num_private_test_cases', type=int, required=True, help='Number of private test cases is required')
+        
+        super(TestCaseGenerator, self).__init__()
+    
+    @auth_required('token')
+    @roles_required('instructor')
+    def post(self, module_id):
+        args = self.parser.parse_args()
+        
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+
+        course = Course.query.filter_by(course_id=module.course_id).first()
+        
+        num_test_cases = args['num_public_test_cases'] + args['num_private_test_cases']
+        
+        while True:
+            try:
+                test_cases = generate_test_cases(module, args['question'], num_test_cases).__root__
+                break
+            except Exception as e:
+                pass
+        
+        return {
+            "question": args['question'],
+            "public": [
+                {
+                    "test_input": test_case.test_input,
+                    "expected_output": test_case.expected_output
+                }
+                for test_case in test_cases[:args['num_public_test_cases']]
+            ],
+            "private": [
+                {
+                    "test_input": test_case.test_input,
+                    "expected_output": test_case.expected_output
+                }
+                for test_case in test_cases[args['num_public_test_cases']:]
+            ]
+        }, 201
+
+
+class FeedbackGenerator(Resource):
+    def __init__(self):
+        self.theoryParser = reqparse.RequestParser()
+        self.theoryParser.add_argument('questions', type=list, required=True, location='json', help='Questions are required')
+        
+        self.programmingParser = reqparse.RequestParser()
+        self.programmingParser.add_argument('question_id', type=int, required=True, location='json', help='Question ID is required')
+        self.programmingParser.add_argument('code_submission', type=str, required=True, location='json', help='Code Submission is required')
+        
+        super(FeedbackGenerator, self).__init__()
+        
+    @auth_required('token')
+    def post(self, assessment_type, assignment_type, module_id):
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+        
+        if assessment_type.upper() not in ['PRACTICE', 'GRADED']:
+            return {"message": "Invalid assessment type"}, 404
+        
+        if assignment_type.upper() == 'THEORY':
+            questions = self.theoryParser.parse_args()['questions']
+            
+            feedbacks = []
+            
+            for q in questions:
+                question = Question.query.filter_by(question_id=q['question_id'],
+                                                    question_type=QuestionType.MCQ).first()
+                
+                chosen_option = Option.query.filter_by(question_id=question.question_id,
+                                                       option_num=q['submitted_option_num']).first()
+                
+                correct_option = Option.query.filter_by(question_id=question.question_id,
+                                                        is_correct=True).first()
+                
+                options = Option.query.filter_by(question_id=question.question_id).all()
+                
+                while True:
+                    try:
+                        generated_feedback = generate_theory_feedback(module, question, options,\
+                            chosen_option, correct_option)
+                        break
+                    except Exception as e:
+                        pass
+                
+                
+                feedback = {
+                    "question_id": question.question_id,
+                    "correct_option_num": correct_option.option_num,
+                    "submitted_option_num": chosen_option.option_num,
+                    "feedback": generated_feedback.feedback,
+                    "tip": generated_feedback.tip
+                }
+                
+                feedbacks.append(feedback)
+            
+            return {"feedback": feedbacks}, 200
+        
+        elif assignment_type.upper() == 'PROGRAMMING':
+            args = self.programmingParser.parse_args()
+            
+            question = Question.query.filter_by(question_id=args['question_id'],
+                                                question_type=QuestionType.PROGRAMMING).first()
+            
+            test_cases = [{
+                            "test_input": test_case.input_data,
+                            "expected_output": test_case.expected_output
+                          } for test_case in question.test_cases]
+            
+            code_submission = args['code_submission']
+                
+            while True:
+                try:
+                    generated_feedback = generate_programming_feedback(module, question, test_cases, \
+                        code_submission) 
+                    break
+                except Exception as e:
+                    pass
+            
+            return {
+                "question_id": question.question_id,
+                "code_submission": code_submission,
+                "feedback": generated_feedback.feedback,
+                "tip": generated_feedback.tip
+            }, 200
+        
+        else:
+            return {"message": "Invalid assignment type"}, 404
+
+
+class CodeHelp(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        self.parser.add_argument('partial_code', type=str, required=True, help='Partial Code is required')
+        
+        super(CodeHelp, self).__init__()
+        
+    @auth_required('token')
+    def post(self, module_id):
+        args = self.parser.parse_args()
+        
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+        
+        question = Question.query.filter_by(question_id=args['question_id']).first()
+        partial_code = args['partial_code']
+        
+        test_cases = [{
+                        "test_input": test_case.input_data,
+                        "expected_output": test_case.expected_output
+                      } for test_case in question.test_cases]
+        
+        while True:
+            try:
+                code_help = generate_code_help(module, question, test_cases, partial_code)
+                break
+            except Exception as e:
+                pass
+        
+        return {
+            "question_id": question.question_id,
+            "partial_code": partial_code,
+            "code_help": code_help.suggestion
+        }
+
+
 api.add_resource(
     Courses,
     '/courses',
@@ -809,4 +986,19 @@ api.add_resource(
 api.add_resource(
     GrPASubmission,
     '/assignment/graded/programming/<int:module_id>/submit'
+)
+
+api.add_resource(
+    TestCaseGenerator,
+    '/assignment/graded/programming/<int:module_id>/generate-test-cases'
+)
+
+api.add_resource(
+    FeedbackGenerator,
+    '/assignment/<assessment_type>/<assignment_type>/<int:module_id>/generate-feedback'
+)
+
+api.add_resource(
+    CodeHelp,
+    '/assignment/practice/programming/<int:module_id>/code-help'
 )
