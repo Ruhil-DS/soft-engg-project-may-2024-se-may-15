@@ -1,18 +1,20 @@
 from flask_restful import Resource, Api, reqparse, marshal, fields
 from flask_security import auth_required, roles_required, current_user
-from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, AssessmentType, AssignmentType, \
-    Question, QuestionType, Option, TestCase, TestCaseType, Submission, User
+from database import db, Course, Module, Lesson, Note, Chatbot as ChatbotDB, Assignment, \
+    AssessmentType, AssignmentType, Question, QuestionType, Option, TestCase, TestCaseType, \
+    Submission, User
 from gen_ai.chatbot import Chatbot as ChatbotLLM
 from gen_ai.video_summarizer import get_video_summary
 from gen_ai.slide_summarizer import get_slide_summary
 from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
-from gen_ai.question_generator import generate_theory_questions, generate_programming_questions
-from gen_ai.testcase_generator import generate_testcases
-from datetime import datetime, timezone
+from gen_ai.assignment_generator import generate_theory_questions, generate_programming_questions, \
+    generate_test_cases
+from datetime import datetime, timezone, timedelta
 from flask import jsonify
 
 api = Api(prefix='/api/v1')
+
 
 course_fields = {
     "course_id": fields.String,
@@ -254,7 +256,8 @@ theory_question_fields['options'] = fields.List(fields.Nested(options_fields))
 class PA(Resource):
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
                                                 assignment_type=AssignmentType.THEORY).first()
 
         if assignment is None:
@@ -268,14 +271,46 @@ class PA(Resource):
             "questions": marshal(assignment.questions, theory_question_fields)
         }, 200
 
-    # TODO: Combine with generator
     @auth_required('token')
     def post(self, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
             return {"message": "Module not found"}, 404
+        
+        course = Course.query.filter_by(course_id=module.course_id).first()
+        
+        pa = Assignment.query.filter_by(module_id=module_id,
+                                        assessment_type=AssessmentType.PRACTICE,
+                                        assignment_type=AssignmentType.THEORY).first()
+        
+        if not pa:
+            pa = Assignment(module_id=module_id,
+                            assignment_type=AssignmentType.THEORY,
+                            assessment_type=AssessmentType.PRACTICE,
+                            due_date=datetime.today() + timedelta(days=7))
+        
+        while True:
+            try:
+                questions = generate_theory_questions(course, module)
+                break
+            except Exception as e:
+                pass
+        
+        for question in questions.__root__:
+            new_question = Question(question_type=QuestionType.MCQ,
+                                    question=question.question)
+            
+            for option in question.options:
+                new_question.options.append(Option(option_num=option.option_num,
+                                                   option=option.option,
+                                                   is_correct=option.is_correct))
+            
+            pa.questions.append(new_question)
+        
+        db.session.add(pa)
+        db.session.commit()
 
-        questions = generate_theory_questions(module)
+        return {"message": "Practice assignment created successfully"}, 201
 
 
 class GA(Resource):
@@ -290,7 +325,8 @@ class GA(Resource):
 
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
                                                 assignment_type=AssignmentType.THEORY).first()
 
         if assignment is None:
@@ -313,16 +349,20 @@ class GA(Resource):
         if not module:
             return {"message": "Module not found"}, 404
 
-        ga = Assignment(module_id=module_id, assignment_type=AssignmentType.THEORY,
+        ga = Assignment(module_id=module_id,
+                        assignment_type=AssignmentType.THEORY,
                         assessment_type=AssessmentType.GRADED,
                         due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
 
         for question in args['questions']:
-            new_question = Question(question_type=QuestionType.MCQ, question=question['question'])
+            new_question = Question(question_type=QuestionType.MCQ,
+                                    question=question['question'])
 
             for option in question['options']:
                 new_question.options.append(
-                    Option(option_num=option['option_num'], option=option['option'], is_correct=option['is_correct']))
+                    Option(option_num=option['option_num'],
+                           option=option['option'],
+                           is_correct=option['is_correct']))
 
             ga.questions.append(new_question)
 
@@ -340,8 +380,10 @@ test_case_fields = {
 
 class TestCasesFields(fields.Raw):
     def format(self, id):
-        public_test_cases = TestCase.query.filter_by(question_id=id, test_case_type=TestCaseType.PUBLIC).all()
-        private_test_cases = TestCase.query.filter_by(question_id=id, test_case_type=TestCaseType.PRIVATE).all()
+        public_test_cases = TestCase.query.filter_by(question_id=id,
+                                                     test_case_type=TestCaseType.PUBLIC).all()
+        private_test_cases = TestCase.query.filter_by(question_id=id,
+                                                      test_case_type=TestCaseType.PRIVATE).all()
 
         return {
             "public": marshal(public_test_cases, test_case_fields),
@@ -359,7 +401,8 @@ programming_question_fields['test_cases'] = TestCasesFields(attribute='question_
 class PrPA(Resource):
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
                                                 assignment_type=AssignmentType.PROGRAMMING).first()
 
         if assignment is None:
@@ -373,14 +416,61 @@ class PrPA(Resource):
             "questions": marshal(assignment.questions, programming_question_fields)
         }, 200
 
-    # TODO: Combine with generator
     @auth_required('token')
     def post(self, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
             return {"message": "Module not found"}, 404
 
-        questions = generate_theory_questions(module)
+        course = Course.query.filter_by(course_id=module.course_id).first()
+        
+        prpa = Assignment.query.filter_by(module_id=module_id,
+                                          assessment_type=AssessmentType.PRACTICE,
+                                          assignment_type=AssignmentType.PROGRAMMING).first()
+        
+        if not prpa:
+            prpa = Assignment(module_id=module_id,
+                              assignment_type=AssignmentType.PROGRAMMING,
+                              assessment_type=AssessmentType.PRACTICE,
+                              due_date=datetime.today() + timedelta(days=7))
+        
+        while True:
+            try:
+                questions = generate_programming_questions(course, module)
+                break
+            except Exception as e:
+                pass
+            
+        
+        for question in questions.__root__:
+            new_question = Question(question_type=QuestionType.PROGRAMMING,
+                                    question=question)
+
+            while True:
+                try:
+                    test_cases = generate_test_cases(module, question).__root__
+                    break
+                except Exception as e:
+                    pass
+            
+            for test_case in test_cases[:len(test_cases) // 2]:
+                new_question.test_cases.append(
+                    TestCase(test_case_type=TestCaseType.PUBLIC,
+                             input_data=test_case.test_input,
+                             expected_output=test_case.expected_output))
+                
+            for test_case in test_cases[len(test_cases) // 2:]:
+                new_question.test_cases.append(
+                    TestCase(test_case_type=TestCaseType.PRIVATE,
+                             input_data=test_case.test_input,
+                             expected_output=test_case.expected_output))
+
+            prpa.questions.append(new_question)
+
+        db.session.add(prpa)
+        db.session.commit()
+        
+        return {"message": "Practice programming assignment created successfully"}, 201
 
 
 class GrPA(Resource):
@@ -395,7 +485,8 @@ class GrPA(Resource):
 
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
                                                 assignment_type=AssignmentType.PROGRAMMING).first()
 
         if assignment is None:
@@ -418,21 +509,25 @@ class GrPA(Resource):
         if not module:
             return {"message": "Module not found"}, 404
 
-        grpa = Assignment(module_id=module_id, assignment_type=AssignmentType.PROGRAMMING,
+        grpa = Assignment(module_id=module_id,
+                          assignment_type=AssignmentType.PROGRAMMING,
                           assessment_type=AssessmentType.GRADED,
                           due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
 
         for question in args['questions']:
-            new_question = Question(question_type=QuestionType.PROGRAMMING, question=question['question'])
+            new_question = Question(question_type=QuestionType.PROGRAMMING,
+                                    question=question['question'])
 
             for test_case in question['test_cases']['public']:
                 new_question.test_cases.append(
-                    TestCase(test_case_type=TestCaseType.PUBLIC, input_data=test_case['test_input'],
+                    TestCase(test_case_type=TestCaseType.PUBLIC,
+                             input_data=test_case['test_input'],
                              expected_output=test_case['expected_output']))
 
             for test_case in question['test_cases']['private']:
                 new_question.test_cases.append(
-                    TestCase(test_case_type=TestCaseType.PRIVATE, input_data=test_case['test_input'],
+                    TestCase(test_case_type=TestCaseType.PRIVATE,
+                             input_data=test_case['test_input'],
                              expected_output=test_case['expected_output']))
 
             grpa.questions.append(new_question)
@@ -460,7 +555,10 @@ class PASubmission(Resource):
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
 
-        assignment = Assignment.query.get(module_id)
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
+                                                assignment_type=AssignmentType.THEORY).first()
+        
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
@@ -504,7 +602,10 @@ class GASubmission(Resource):
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
 
-        assignment = Assignment.query.get(module_id)
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
+                                                assignment_type=AssignmentType.THEORY).first()
+        
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
@@ -545,7 +646,10 @@ class PrPASubmission(Resource):
         args = self.parser.parse_args()
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        assignment = Assignment.query.get(module_id)
+        
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
+                                                assignment_type=AssignmentType.PROGRAMMING).first()
 
         if not assignment:
             return {'message': 'Assignment not found'}, 404
@@ -588,7 +692,10 @@ class GrPASubmission(Resource):
         args = self.parser.parse_args()
         submission_content = args['submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        assignment = Assignment.query.get(module_id)
+        
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
+                                                assignment_type=AssignmentType.PROGRAMMING).first()
 
         if not assignment:
             return {'message': 'Assignment not found'}, 404
