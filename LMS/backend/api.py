@@ -9,7 +9,7 @@ from gen_ai.slide_summarizer import get_slide_summary
 from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.assignment_generator import generate_theory_questions, generate_programming_questions, \
-    generate_testcases
+    generate_test_cases
 from datetime import datetime, timezone, timedelta
 from flask import jsonify
 
@@ -421,10 +421,26 @@ class PrPA(Resource):
         
         while True:
             try:
-                questions = generate_theory_questions(course, module)
+                questions = generate_programming_questions(course, module)
                 break
             except Exception as e:
                 pass
+            
+        
+        for question in questions.__root__:
+            new_question = Question(question_type=QuestionType.PROGRAMMING, question=question)
+
+            test_cases = generate_test_cases(module, question)
+            
+            # for test_case in test_cases[:len(test_cases) // 2]:
+            #     new_question.test_cases.append(
+            #         TestCase(test_case_type=TestCaseType.PUBLIC, input_data=test_case['test_input'],
+            #                  expected_output=test_case['expected_output']))
+
+            prpa.questions.append(new_question)
+
+        db.session.add(prpa)
+        db.session.commit()
 
 
 class GrPA(Resource):

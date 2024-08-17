@@ -78,5 +78,38 @@ def generate_programming_questions(course, module):
     return chain.invoke({"course_name": course.course_name, "module_name": module.module_name})
 
 
-def generate_testcases(module, question):
-    pass
+class TestCase(BaseModel):
+    test_input: str = Field(description="input data for the test case to test the code without the function stub or name")
+    expected_output: str = Field(description="expected output for the test case to test the code")
+
+class TestCaseList(BaseModel):
+    __root__: List[TestCase] = Field(description="list of test cases for the question to test the code")
+
+def generate_test_cases(module, question):
+    prompt_template = """
+        You work for an instructor who has created a programming assignment for the module {module_name}. You are tasked to design test cases (input data and corresponding expected output) for the programming questions to test the code that students have written for the question.
+        
+        Design 6 test cases of going from easy to intermediate difficulty for the question in JSON format. Make sure the questions are related to the question and cover different cases of the code. Make sure the input data and expected output are returned wrapped as strings.
+        
+        Here is the programming question:
+
+        "{question}"
+        
+        Just return the set of test cases as a List of Test Cases in JSON. Do not provide boilerplate text, no explanation, no unnecessary text to explain the output, not even the 'Here is the response' like text.
+        
+        Here are the format instructions for the output:
+        
+        {format_instructions}
+        """
+    
+    parser = PydanticOutputParser(pydantic_object=TestCaseList)
+    
+    prompt = PromptTemplate(
+        template=prompt_template,
+        input_variables=["module_name", "question"],
+        partial_variables={"format_instructions": parser.get_format_instructions()},
+    )
+    
+    chain = prompt | model | parser
+    
+    return chain.invoke({"module_name": module, "question": question})
