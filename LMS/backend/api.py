@@ -867,7 +867,7 @@ class CodeHelp(Resource):
         
         super(CodeHelp, self).__init__()
         
-    # @auth_required('token')
+    @auth_required('token')
     def post(self, module_id):
         args = self.parser.parse_args()
         
