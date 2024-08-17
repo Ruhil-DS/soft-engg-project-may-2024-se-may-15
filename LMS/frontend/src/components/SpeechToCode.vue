@@ -61,7 +61,8 @@ const hideModal = () => {
                         {{isRecording ? 'Stop Recording': 'Record'}}
                     </button>
                     <hr>
-                    <span>{{test}}</span>
+                    <p class="mt-2 mb-2"><span class="fw-medium">Question: </span>{{test}}</p>
+                    <br>
                     <p class="fw-medium m-0 p-0">Transcript:</p>
                     <div class="transcript" v-text="transcript"></div>
                 </div>
