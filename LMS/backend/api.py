@@ -402,8 +402,7 @@ class PrPA(Resource):
             "questions": marshal(assignment.questions, programming_question_fields)
         }, 200
 
-    # TODO: Combine with generator
-    # @auth_required('token')
+    @auth_required('token')
     def post(self, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
