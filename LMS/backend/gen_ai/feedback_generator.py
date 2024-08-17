@@ -42,8 +42,34 @@ def generate_theory_feedback(module, question, options, chosen_option, correct_o
         "option_4": options[3].option, "chosen_option": chosen_option.option, \
         "correct_option": correct_option.option})
 
-def generate_programming_feedback(question, chosen_option, correct_option):
-    pass
+def generate_programming_feedback(module, question, test_cases, submitted_code):
+    prompt_template = """
+        You are given submission for a programming question based assignment by a student for the module {module_name}. You are tasked to identify if the submitted code deals with the test inputs correctly and is able to return the expected output. Based on the performance of code on various test cases, you need to give feedback (whether code is correct or not) and a tip to attempt such questions in the future or how to improve the code.
+        
+        The programming question is "{question}" and test cases are as follow in JSON format as a list of objects with test_input and corresponding expected_output as the keys:
+        {test_cases}
+        
+        Student has submitted the following code in Python: 
+        {submitted_code}.
+        
+        Based on this submission, verify the code being run for the various test cases and return the feedback in JSON format. Do not provide boilerplate text, no explanation, no unnecessary text to explain the output, not even the 'Here is the response' like text.
+        
+        Here are the format instructions for the output:
+        
+        {format_instructions}
+        """
+    
+    parser = PydanticOutputParser(pydantic_object=Feedback)
+    
+    prompt = PromptTemplate(
+        template=prompt_template,
+        input_variables=["module_name", "question", "test_cases", "submitted_code"],
+        partial_variables={"format_instructions": parser.get_format_instructions()},
+    )
+    
+    chain = prompt | model | parser
+    
+    return chain.invoke({"module_name": module.module_name, "question": question.question, "test_cases": str(test_cases), "submitted_code": submitted_code})
 
 def generate_code_help(question, chosen_option, correct_option):
     pass

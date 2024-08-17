@@ -776,7 +776,7 @@ class FeedbackGenerator(Resource):
         
         self.programmingParser = reqparse.RequestParser()
         self.programmingParser.add_argument('question_id', type=int, required=True, location='json', help='Question ID is required')
-        self.programmingParser.add_argument('test_cases', type=list, required=True, location='json', help='Test Cases are required')
+        # self.programmingParser.add_argument('test_cases', type=list, required=True, location='json', help='Test Cases are required')
         self.programmingParser.add_argument('code_submission', type=str, required=True, location='json', help='Code Submission is required')
         
         super(FeedbackGenerator, self).__init__()
@@ -821,11 +821,30 @@ class FeedbackGenerator(Resource):
             
             return {"feedback": feedbacks}, 200
         
-        elif assessment_type.upper() == AssessmentType.PROGRAMMING:
-            pass
+        elif assignment_type.upper() == 'PROGRAMMING':
+            args = self.programmingParser.parse_args()
+            
+            question = Question.query.filter_by(question_id=args['question_id'],
+                                                question_type=QuestionType.PROGRAMMING).first()
+            
+            test_cases = [{
+                            "test_input": test_case.input_data,
+                            "expected_output": test_case.expected_output
+                          } for test_case in question.test_cases]
+            
+            code_submission = args['code_submission']
+                
+            generated_feedback = generate_programming_feedback(module, question, test_cases, code_submission) 
+            
+            return {
+                "question_id": question.question_id,
+                "code_submission": code_submission,
+                "feedback": generated_feedback.feedback,
+                "tip": generated_feedback.tip
+            }, 200
         
         else:
-            return {"message": "Invalid assessment type"}, 404
+            return {"message": "Invalid assignment type"}, 404
                 
 
 api.add_resource(
