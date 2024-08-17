@@ -10,6 +10,7 @@ from gen_ai.translator import get_translation
 from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.assignment_generator import generate_theory_questions, generate_programming_questions, \
     generate_test_cases
+from gen_ai.feedback_generator import generate_theory_feedback, generate_programming_feedback, generate_code_help
 from datetime import datetime, timezone, timedelta
 from flask import jsonify
 
@@ -768,6 +769,65 @@ class TestCaseGenerator(Resource):
         }, 201
 
 
+class FeedbackGenerator(Resource):
+    def __init__(self):
+        self.theoryParser = reqparse.RequestParser()
+        self.theoryParser.add_argument('questions', type=list, required=True, location='json', help='Questions are required')
+        
+        self.programmingParser = reqparse.RequestParser()
+        self.programmingParser.add_argument('question_id', type=int, required=True, location='json', help='Question ID is required')
+        self.programmingParser.add_argument('test_cases', type=list, required=True, location='json', help='Test Cases are required')
+        self.programmingParser.add_argument('code_submission', type=str, required=True, location='json', help='Code Submission is required')
+        
+        super(FeedbackGenerator, self).__init__()
+        
+    # @auth_required('token')
+    def post(self, assessment_type, assignment_type, module_id):
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+        
+        if assessment_type.upper() not in ['PRACTICE', 'GRADED']:
+            return {"message": "Invalid assessment type"}, 404
+        
+        if assignment_type.upper() == 'THEORY':
+            questions = self.theoryParser.parse_args()['questions']
+            
+            feedbacks = []
+            
+            for q in questions:
+                question = Question.query.filter_by(question_id=q['question_id'],
+                                                    question_type=QuestionType.MCQ).first()
+                
+                chosen_option = Option.query.filter_by(question_id=question.question_id,
+                                                       option_num=q['submitted_option_num']).first()
+                
+                correct_option = Option.query.filter_by(question_id=question.question_id,
+                                                        is_correct=True).first()
+                
+                options = Option.query.filter_by(question_id=question.question_id).all()
+                
+                generated_feedback = generate_theory_feedback(module, question, options, chosen_option, correct_option)
+                
+                feedback = {
+                    "question_id": question.question_id,
+                    "correct_option_num": correct_option.option_num,
+                    "submitted_option_num": chosen_option.option_num,
+                    "feedback": generated_feedback.feedback,
+                    "tip": generated_feedback.tip
+                }
+                
+                feedbacks.append(feedback)
+            
+            return {"feedback": feedbacks}, 200
+        
+        elif assessment_type.upper() == AssessmentType.PROGRAMMING:
+            pass
+        
+        else:
+            return {"message": "Invalid assessment type"}, 404
+                
+
 api.add_resource(
     Courses,
     '/courses',
@@ -862,4 +922,9 @@ api.add_resource(
 api.add_resource(
     TestCaseGenerator,
     '/assignment/graded/programming/<int:module_id>/generate-test-cases'
+)
+
+api.add_resource(
+    FeedbackGenerator,
+    '/assignment/<assessment_type>/<assignment_type>/<int:module_id>/generate-feedback'
 )
