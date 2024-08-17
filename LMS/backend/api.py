@@ -720,6 +720,54 @@ class GrPASubmission(Resource):
         return {"message": "Graded Programming Assignment Solution submitted successfully"}, 201
 
 
+class TestCaseGenerator(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('question', type=str, required=True, help='Question is required')
+        self.parser.add_argument('num_public_test_cases', type=int, required=True, help='Number of public test cases is required')
+        self.parser.add_argument('num_private_test_cases', type=int, required=True, help='Number of private test cases is required')
+        
+        super(TestCaseGenerator, self).__init__()
+    
+    # @auth_required('token')
+    # @roles_required('instructor')
+    def post(self, module_id):
+        args = self.parser.parse_args()
+        
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+
+        course = Course.query.filter_by(course_id=module.course_id).first()
+        
+        num_test_cases = args['num_public_test_cases'] + args['num_private_test_cases']
+        
+        while True:
+            try:
+                test_cases = generate_test_cases(module, args['question'], num_test_cases).__root__
+                break
+            except Exception as e:
+                pass
+        
+        return {
+            "question": args['question'],
+            "public": [
+                {
+                    "test_input": test_case.test_input,
+                    "expected_output": test_case.expected_output
+                }
+                for test_case in test_cases[:args['num_public_test_cases']]
+            ],
+            "private": [
+                {
+                    "test_input": test_case.test_input,
+                    "expected_output": test_case.expected_output
+                }
+                for test_case in test_cases[args['num_public_test_cases']:]
+            ]
+        }, 201
+
+
 api.add_resource(
     Courses,
     '/courses',
@@ -809,4 +857,9 @@ api.add_resource(
 api.add_resource(
     GrPASubmission,
     '/assignment/graded/programming/<int:module_id>/submit'
+)
+
+api.add_resource(
+    TestCaseGenerator,
+    '/assignment/graded/programming/<int:module_id>/generate-test-cases'
 )
