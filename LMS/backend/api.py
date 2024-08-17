@@ -15,6 +15,7 @@ from flask import jsonify
 
 api = Api(prefix='/api/v1')
 
+
 course_fields = {
     "course_id": fields.String,
     "course_name": fields.String,
@@ -255,7 +256,8 @@ theory_question_fields['options'] = fields.List(fields.Nested(options_fields))
 class PA(Resource):
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
                                                 assignment_type=AssignmentType.THEORY).first()
 
         if assignment is None:
@@ -277,13 +279,15 @@ class PA(Resource):
         
         course = Course.query.filter_by(course_id=module.course_id).first()
         
-        pa = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.THEORY).first()
+        pa = Assignment.query.filter_by(module_id=module_id,
+                                        assessment_type=AssessmentType.PRACTICE,
+                                        assignment_type=AssignmentType.THEORY).first()
         
         if not pa:
             pa = Assignment(module_id=module_id,
-                        assignment_type=AssignmentType.THEORY,
-                        assessment_type=AssessmentType.PRACTICE,
-                        due_date=datetime.today() + timedelta(days=7))
+                            assignment_type=AssignmentType.THEORY,
+                            assessment_type=AssessmentType.PRACTICE,
+                            due_date=datetime.today() + timedelta(days=7))
         
         while True:
             try:
@@ -297,7 +301,9 @@ class PA(Resource):
                                     question=question.question)
             
             for option in question.options:
-                new_question.options.append(Option(option_num=option.option_num, option=option.option, is_correct=option.is_correct))
+                new_question.options.append(Option(option_num=option.option_num,
+                                                   option=option.option,
+                                                   is_correct=option.is_correct))
             
             pa.questions.append(new_question)
         
@@ -319,7 +325,8 @@ class GA(Resource):
 
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
                                                 assignment_type=AssignmentType.THEORY).first()
 
         if assignment is None:
@@ -342,16 +349,20 @@ class GA(Resource):
         if not module:
             return {"message": "Module not found"}, 404
 
-        ga = Assignment(module_id=module_id, assignment_type=AssignmentType.THEORY,
+        ga = Assignment(module_id=module_id,
+                        assignment_type=AssignmentType.THEORY,
                         assessment_type=AssessmentType.GRADED,
                         due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
 
         for question in args['questions']:
-            new_question = Question(question_type=QuestionType.MCQ, question=question['question'])
+            new_question = Question(question_type=QuestionType.MCQ,
+                                    question=question['question'])
 
             for option in question['options']:
                 new_question.options.append(
-                    Option(option_num=option['option_num'], option=option['option'], is_correct=option['is_correct']))
+                    Option(option_num=option['option_num'],
+                           option=option['option'],
+                           is_correct=option['is_correct']))
 
             ga.questions.append(new_question)
 
@@ -369,8 +380,10 @@ test_case_fields = {
 
 class TestCasesFields(fields.Raw):
     def format(self, id):
-        public_test_cases = TestCase.query.filter_by(question_id=id, test_case_type=TestCaseType.PUBLIC).all()
-        private_test_cases = TestCase.query.filter_by(question_id=id, test_case_type=TestCaseType.PRIVATE).all()
+        public_test_cases = TestCase.query.filter_by(question_id=id,
+                                                     test_case_type=TestCaseType.PUBLIC).all()
+        private_test_cases = TestCase.query.filter_by(question_id=id,
+                                                      test_case_type=TestCaseType.PRIVATE).all()
 
         return {
             "public": marshal(public_test_cases, test_case_fields),
@@ -388,7 +401,8 @@ programming_question_fields['test_cases'] = TestCasesFields(attribute='question_
 class PrPA(Resource):
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.PRACTICE,
                                                 assignment_type=AssignmentType.PROGRAMMING).first()
 
         if assignment is None:
@@ -410,13 +424,15 @@ class PrPA(Resource):
 
         course = Course.query.filter_by(course_id=module.course_id).first()
         
-        prpa = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.PROGRAMMING).first()
+        prpa = Assignment.query.filter_by(module_id=module_id,
+                                          assessment_type=AssessmentType.PRACTICE,
+                                          assignment_type=AssignmentType.PROGRAMMING).first()
         
         if not prpa:
             prpa = Assignment(module_id=module_id,
-                        assignment_type=AssignmentType.PROGRAMMING,
-                        assessment_type=AssessmentType.PRACTICE,
-                        due_date=datetime.today() + timedelta(days=7))
+                              assignment_type=AssignmentType.PROGRAMMING,
+                              assessment_type=AssessmentType.PRACTICE,
+                              due_date=datetime.today() + timedelta(days=7))
         
         while True:
             try:
@@ -427,7 +443,8 @@ class PrPA(Resource):
             
         
         for question in questions.__root__:
-            new_question = Question(question_type=QuestionType.PROGRAMMING, question=question)
+            new_question = Question(question_type=QuestionType.PROGRAMMING,
+                                    question=question)
 
             while True:
                 try:
@@ -468,7 +485,8 @@ class GrPA(Resource):
 
     @auth_required('token')
     def get(self, module_id):
-        assignment = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.GRADED,
+        assignment = Assignment.query.filter_by(module_id=module_id,
+                                                assessment_type=AssessmentType.GRADED,
                                                 assignment_type=AssignmentType.PROGRAMMING).first()
 
         if assignment is None:
@@ -491,21 +509,25 @@ class GrPA(Resource):
         if not module:
             return {"message": "Module not found"}, 404
 
-        grpa = Assignment(module_id=module_id, assignment_type=AssignmentType.PROGRAMMING,
+        grpa = Assignment(module_id=module_id,
+                          assignment_type=AssignmentType.PROGRAMMING,
                           assessment_type=AssessmentType.GRADED,
                           due_date=datetime.strptime(args['due_date'], '%Y-%m-%dT%H:%M:%SZ'))
 
         for question in args['questions']:
-            new_question = Question(question_type=QuestionType.PROGRAMMING, question=question['question'])
+            new_question = Question(question_type=QuestionType.PROGRAMMING,
+                                    question=question['question'])
 
             for test_case in question['test_cases']['public']:
                 new_question.test_cases.append(
-                    TestCase(test_case_type=TestCaseType.PUBLIC, input_data=test_case['test_input'],
+                    TestCase(test_case_type=TestCaseType.PUBLIC,
+                             input_data=test_case['test_input'],
                              expected_output=test_case['expected_output']))
 
             for test_case in question['test_cases']['private']:
                 new_question.test_cases.append(
-                    TestCase(test_case_type=TestCaseType.PRIVATE, input_data=test_case['test_input'],
+                    TestCase(test_case_type=TestCaseType.PRIVATE,
+                             input_data=test_case['test_input'],
                              expected_output=test_case['expected_output']))
 
             grpa.questions.append(new_question)
