@@ -112,4 +112,4 @@ def generate_test_cases(module, question):
     
     chain = prompt | model | parser
     
-    return chain.invoke({"module_name": module, "question": question})
+    return chain.invoke({"module_name": module.module_name, "question": question})

@@ -403,7 +403,7 @@ class PrPA(Resource):
         }, 200
 
     # TODO: Combine with generator
-    @auth_required('token')
+    # @auth_required('token')
     def post(self, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
@@ -411,7 +411,7 @@ class PrPA(Resource):
 
         course = Course.query.filter_by(course_id=module.course_id).first()
         
-        prpa = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.THEORY).first()
+        prpa = Assignment.query.filter_by(module_id=module_id, assessment_type=AssessmentType.PRACTICE, assignment_type=AssignmentType.PROGRAMMING).first()
         
         if not prpa:
             prpa = Assignment(module_id=module_id,
@@ -430,17 +430,31 @@ class PrPA(Resource):
         for question in questions.__root__:
             new_question = Question(question_type=QuestionType.PROGRAMMING, question=question)
 
-            test_cases = generate_test_cases(module, question)
+            while True:
+                try:
+                    test_cases = generate_test_cases(module, question).__root__
+                    break
+                except Exception as e:
+                    pass
             
-            # for test_case in test_cases[:len(test_cases) // 2]:
-            #     new_question.test_cases.append(
-            #         TestCase(test_case_type=TestCaseType.PUBLIC, input_data=test_case['test_input'],
-            #                  expected_output=test_case['expected_output']))
+            for test_case in test_cases[:len(test_cases) // 2]:
+                new_question.test_cases.append(
+                    TestCase(test_case_type=TestCaseType.PUBLIC,
+                             input_data=test_case.test_input,
+                             expected_output=test_case.expected_output))
+                
+            for test_case in test_cases[len(test_cases) // 2:]:
+                new_question.test_cases.append(
+                    TestCase(test_case_type=TestCaseType.PRIVATE,
+                             input_data=test_case.test_input,
+                             expected_output=test_case.expected_output))
 
             prpa.questions.append(new_question)
 
         db.session.add(prpa)
         db.session.commit()
+        
+        return {"message": "Practice programming assignment created successfully"}, 201
 
 
 class GrPA(Resource):
