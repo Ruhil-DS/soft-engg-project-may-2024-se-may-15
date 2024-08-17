@@ -85,11 +85,11 @@ class TestCase(BaseModel):
 class TestCaseList(BaseModel):
     __root__: List[TestCase] = Field(description="list of test cases for the question to test the code")
 
-def generate_test_cases(module, question):
+def generate_test_cases(module, question, no_of_test_cases=6):
     prompt_template = """
         You work for an instructor who has created a programming assignment for the module {module_name}. You are tasked to design test cases (input data and corresponding expected output) for the programming questions to test the code that students have written for the question.
         
-        Design 6 test cases of going from easy to intermediate difficulty for the question in JSON format. Make sure the questions are related to the question and cover different cases of the code. Make sure the input data and expected output are returned wrapped as strings.
+        Design {no_of_test_cases} test cases of going from easy to intermediate difficulty for the question in JSON format. Make sure the questions are related to the question and cover different cases of the code. Make sure the input data and expected output are returned wrapped as strings.
         
         Here is the programming question:
 
@@ -106,10 +106,10 @@ def generate_test_cases(module, question):
     
     prompt = PromptTemplate(
         template=prompt_template,
-        input_variables=["module_name", "question"],
+        input_variables=["module_name", "question", "no_of_test_cases"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
     
     chain = prompt | model | parser
     
-    return chain.invoke({"module_name": module.module_name, "question": question})
+    return chain.invoke({"module_name": module.module_name, "question": question, "no_of_test_cases": str(no_of_test_cases)})
