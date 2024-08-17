@@ -776,12 +776,11 @@ class FeedbackGenerator(Resource):
         
         self.programmingParser = reqparse.RequestParser()
         self.programmingParser.add_argument('question_id', type=int, required=True, location='json', help='Question ID is required')
-        # self.programmingParser.add_argument('test_cases', type=list, required=True, location='json', help='Test Cases are required')
         self.programmingParser.add_argument('code_submission', type=str, required=True, location='json', help='Code Submission is required')
         
         super(FeedbackGenerator, self).__init__()
         
-    # @auth_required('token')
+    @auth_required('token')
     def post(self, assessment_type, assignment_type, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
@@ -807,7 +806,14 @@ class FeedbackGenerator(Resource):
                 
                 options = Option.query.filter_by(question_id=question.question_id).all()
                 
-                generated_feedback = generate_theory_feedback(module, question, options, chosen_option, correct_option)
+                while True:
+                    try:
+                        generated_feedback = generate_theory_feedback(module, question, options,\
+                            chosen_option, correct_option)
+                        break
+                    except Exception as e:
+                        pass
+                
                 
                 feedback = {
                     "question_id": question.question_id,
@@ -834,7 +840,13 @@ class FeedbackGenerator(Resource):
             
             code_submission = args['code_submission']
                 
-            generated_feedback = generate_programming_feedback(module, question, test_cases, code_submission) 
+            while True:
+                try:
+                    generated_feedback = generate_programming_feedback(module, question, test_cases, \
+                        code_submission) 
+                    break
+                except Exception as e:
+                    pass
             
             return {
                 "question_id": question.question_id,
@@ -845,7 +857,44 @@ class FeedbackGenerator(Resource):
         
         else:
             return {"message": "Invalid assignment type"}, 404
-                
+
+
+class CodeHelp(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
+        self.parser.add_argument('partial_code', type=str, required=True, help='Partial Code is required')
+        
+        super(CodeHelp, self).__init__()
+        
+    # @auth_required('token')
+    def post(self, module_id):
+        args = self.parser.parse_args()
+        
+        module = Module.query.filter_by(module_id=module_id).first()
+        if not module:
+            return {"message": "Module not found"}, 404
+        
+        question = Question.query.filter_by(question_id=args['question_id']).first()
+        partial_code = args['partial_code']
+        
+        test_cases = [{
+                        "test_input": test_case.input_data,
+                        "expected_output": test_case.expected_output
+                      } for test_case in question.test_cases]
+        
+        while True:
+            try:
+                code_help = generate_code_help(module, question, test_cases, partial_code)
+                break
+            except Exception as e:
+                pass
+        
+        return {
+            "question_id": question.question_id,
+            "partial_code": partial_code,
+            "code_help": code_help.suggestion
+        }
 
 api.add_resource(
     Courses,
@@ -946,4 +995,9 @@ api.add_resource(
 api.add_resource(
     FeedbackGenerator,
     '/assignment/<assessment_type>/<assignment_type>/<int:module_id>/generate-feedback'
+)
+
+api.add_resource(
+    CodeHelp,
+    '/assignment/practice/programming/<int:module_id>/code-help'
 )

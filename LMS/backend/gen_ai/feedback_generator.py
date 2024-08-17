@@ -69,7 +69,38 @@ def generate_programming_feedback(module, question, test_cases, submitted_code):
     
     chain = prompt | model | parser
     
-    return chain.invoke({"module_name": module.module_name, "question": question.question, "test_cases": str(test_cases), "submitted_code": submitted_code})
+    return chain.invoke({"module_name": module.module_name, "question": question.question, \
+        "test_cases": str(test_cases), "submitted_code": submitted_code})
 
-def generate_code_help(question, chosen_option, correct_option):
-    pass
+
+class CodingHelp(BaseModel):
+    suggestion: str = Field(description="coding suggestion and hints to nudge student to improve their code to achieve the task")
+
+def generate_code_help(module, question, test_cases, partial_code):
+    prompt_template = """
+        You are a coding mentor to students to help them in their programming assignments for the module {module_name}. You are tasked to check the student's code (even if in partially-complete state) and provide suggestions to them to improve their code or provide hints what approach they can follow to attempt the programming question. However, in doing so, make sure you just provide hints to nudge them on the correct path and do not reveal the actual solution to the problem.
+        
+        The programming question is "{question}" and test cases against which the solution is tested are as follow in JSON format as a list of objects with test_input and corresponding expected_output as the keys:
+        {test_cases}
+        
+        Student has written the following code (in partially-complete state) in Python: 
+        {partial_code}.
+        
+        Based on the current state of code, return the coding suggestion in JSON format. Keep the suggestion short and concise using about 20 words. Do not provide boilerplate text, no explanation, no unnecessary text to explain the output, not even the 'Here is the response' like text.
+        
+        Here are the format instructions for the output:
+        
+        {format_instructions}
+        """
+    
+    parser = PydanticOutputParser(pydantic_object=CodingHelp)
+    
+    prompt = PromptTemplate(
+        template=prompt_template,
+        input_variables=["module_name", "question", "test_cases", "partial_code"],
+        partial_variables={"format_instructions": parser.get_format_instructions()},
+    )
+    
+    chain = prompt | model | parser
+    
+    return chain.invoke({"module_name": module.module_name, "question": question.question, "test_cases": str(test_cases), "partial_code": partial_code})
