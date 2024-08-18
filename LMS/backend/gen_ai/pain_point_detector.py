@@ -9,9 +9,11 @@ os.environ["GROQ_API_KEY"] = "gsk_h1iTl5q2UoIroiyYYnszWGdyb3FY85x1WvxS6TvKnKpXXA
 
 model = ChatGroq(temperature=0.4, model="llama3-8b-8192")
 
+
 class PainPointsRevision(BaseModel):
     revision_plan: str = Field(description="revision plan for the student based on his/her learning pain points")
     pain_points: List[str] = Field(description="5-10 learning pain points for the student based on their submission")
+
 
 def detect_pain_points(submissions):
     prompt_template = """
@@ -34,22 +36,22 @@ def detect_pain_points(submissions):
         
         {format_instructions}
         """
-    
+
     parser = PydanticOutputParser(pydantic_object=PainPointsRevision)
-    
+
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=["submissions"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
-    
+
     chain = prompt | model | parser
     response = chain.invoke({"submissions": str(submissions)})
-    
+
     output = {}
     output['revision_plan'] = response.revision_plan
     output['pain_points'] = []
     for p in response.pain_points:
         output['pain_points'].append(p)
-        
+
     return output
