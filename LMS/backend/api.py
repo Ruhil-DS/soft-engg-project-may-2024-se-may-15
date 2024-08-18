@@ -11,6 +11,7 @@ from gen_ai.text_to_code_converter import get_converted_code
 from gen_ai.assignment_generator import generate_theory_questions, generate_programming_questions, \
     generate_test_cases
 from gen_ai.feedback_generator import generate_theory_feedback, generate_programming_feedback, generate_code_help
+from gen_ai.pain_point_detector import detect_pain_points
 from code_runner import run_code
 from datetime import datetime, timezone, timedelta
 import json
@@ -1102,6 +1103,32 @@ class CodeRunner(Resource):
         }, 200
 
 
+class PainPointDetector(Resource):
+    @auth_required('token')
+    def get(self):
+        sub = Submission.query.filter_by(user_id=current_user.id).all()
+        if len(sub) == 0:
+            return {"message": "No Submissions Found"}, 404
+        
+        submissions = []
+        for s in sub:
+            assignment = Assignment.query.filter_by(assignment_id=s.assignment_id).first()
+            module = Module.query.filter_by(module_id=assignment.module_id).first()
+            ele = {}
+            ele['module_id'] = module.module_id
+            ele['module_name'] = module.module_name
+            ele['assignment_type'] = assignment.assignment_type
+            ele['assessment_type'] = assignment.assessment_type
+            ele['grade'] = s.grade
+            submissions.append(ele)
+        
+        while True:
+            try:
+                return detect_pain_points(str(submissions))
+            except Exception as e:
+                pass
+
+
 api.add_resource(
     Courses,
     '/courses',
@@ -1211,4 +1238,9 @@ api.add_resource(
 api.add_resource(
     CodeRunner,
     '/run-code'
+)
+
+api.add_resource(
+    PainPointDetector,
+    '/detect-pain-points'
 )
