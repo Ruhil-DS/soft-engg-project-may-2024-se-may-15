@@ -202,7 +202,11 @@ class VideoSummarizer(Resource):
         course = Course.query.filter_by(course_id=course_id).first()
         lesson = Lesson.query.filter_by(module_id=module_id, lesson_id=lesson_id).first()
 
-        return get_video_summary(course, lesson), 200
+        while True:
+            try:
+                return get_video_summary(course, lesson), 200
+            except Exception as e:
+                pass
 
 
 class SlideSummarizer(Resource):
@@ -211,7 +215,11 @@ class SlideSummarizer(Resource):
         course = Course.query.filter_by(course_id=course_id).first()
         lesson = Lesson.query.filter_by(module_id=module_id, lesson_id=lesson_id).first()
 
-        return get_slide_summary(course, lesson), 200
+        while True:
+            try:
+                return get_slide_summary(course, lesson), 200
+            except Exception as e:
+                pass
 
 
 class Translator(Resource):
@@ -225,7 +233,11 @@ class Translator(Resource):
     def post(self):
         args = self.parser.parse_args()
 
-        return get_translation(args['source_text'], args['target_language']), 200
+        while True:
+            try:
+                return get_translation(args['source_text'], args['target_language']), 200
+            except Exception as e:
+                pass
 
 
 class SpeechToCode(Resource):
@@ -239,8 +251,14 @@ class SpeechToCode(Resource):
     @auth_required('token')
     def post(self):
         args = self.parser.parse_args()
-        return get_converted_code(args['audio_transcript'], args['coding_language'], args['question']), 200
-
+        
+        while True:
+            try:
+                return get_converted_code(args['audio_transcript'], args['coding_language'], args['question']), 200
+                    
+            except Exception as e:
+                pass
+                
 
 options_fields = {
     "option_num": fields.Integer,
