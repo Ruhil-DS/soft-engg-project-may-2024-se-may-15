@@ -9,18 +9,22 @@ os.environ["GROQ_API_KEY"] = "gsk_h1iTl5q2UoIroiyYYnszWGdyb3FY85x1WvxS6TvKnKpXXA
 
 model = ChatGroq(temperature=0.4, model="llama3-8b-8192")
 
+
 class Option(BaseModel):
     option_num: int = Field(description="answer option number for listing in the question")
     option: str = Field(description="answer option text to be displayed")
     is_correct: bool = Field(description="identicator if the option is correct or not")
 
+
 class TheoryQuestion(BaseModel):
     question_num: int = Field(description="theory question number for listing in the assignment")
     question: str = Field(description="theory question for the assignment")
     options: List[Option] = Field(description="list of answer options for the question")
-    
+
+
 class TheoryQuestionList(BaseModel):
     __root__: List[TheoryQuestion] = Field(description="list of theory questions for the assignment")
+
 
 def generate_theory_questions(course, module):
     prompt_template = """
@@ -41,22 +45,23 @@ def generate_theory_questions(course, module):
         
         {format_instructions}
         """
-    
+
     parser = PydanticOutputParser(pydantic_object=TheoryQuestionList)
-    
+
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=["course_name", "module_name"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
-    
+
     chain = prompt | model | parser
-    
+
     return chain.invoke({"course_name": course.course_name, "module_name": module.module_name})
 
 
 class ProgrammingQuestionList(BaseModel):
     __root__: List[str] = Field(description="list of programming questions for the assignment")
+
 
 def generate_programming_questions(course, module):
     prompt_template = """
@@ -76,26 +81,29 @@ def generate_programming_questions(course, module):
         
         {format_instructions}
         """
-    
+
     parser = PydanticOutputParser(pydantic_object=ProgrammingQuestionList)
-    
+
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=["course_name", "module_name"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
-    
+
     chain = prompt | model | parser
-    
+
     return chain.invoke({"course_name": course.course_name, "module_name": module.module_name})
 
 
 class TestCase(BaseModel):
-    test_input: str = Field(description="input data for the test case to test the code without the function stub or name")
+    test_input: str = Field(
+        description="input data for the test case to test the code without the function stub or name")
     expected_output: str = Field(description="expected output for the test case to test the code")
+
 
 class TestCaseList(BaseModel):
     __root__: List[TestCase] = Field(description="list of test cases for the question to test the code")
+
 
 def generate_test_cases(module, question, no_of_test_cases=6):
     prompt_template = """
@@ -120,15 +128,16 @@ def generate_test_cases(module, question, no_of_test_cases=6):
         
         {format_instructions}
         """
-    
+
     parser = PydanticOutputParser(pydantic_object=TestCaseList)
-    
+
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=["module_name", "question", "no_of_test_cases"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
-    
+
     chain = prompt | model | parser
-    
-    return chain.invoke({"module_name": module.module_name, "question": question, "no_of_test_cases": str(no_of_test_cases)})
+
+    return chain.invoke(
+        {"module_name": module.module_name, "question": question, "no_of_test_cases": str(no_of_test_cases)})

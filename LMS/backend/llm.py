@@ -10,7 +10,7 @@ os.environ['GOOGLE_API_KEY'] = "AIzaSyBl_AiZVeYjCyekAkdVeL26yV3_yPektJo"
 chat_model = ChatGoogleGenerativeAI(temperature=0.0, model='gemini-pro')
 
 
-def code_error_explanation(chat_model=chat_model, code_block: str=None) -> str:
+def code_error_explanation(chat_model=chat_model, code_block: str = None) -> str:
     """
     This function will help explain the error in the code block using the LLM.
     :param code_block: the code block that contains the error.

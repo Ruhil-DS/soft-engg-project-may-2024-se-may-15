@@ -18,7 +18,6 @@ import json
 
 api = Api(prefix='/api/v1')
 
-
 course_fields = {
     "course_id": fields.String,
     "course_name": fields.String,
@@ -252,14 +251,14 @@ class SpeechToCode(Resource):
     @auth_required('token')
     def post(self):
         args = self.parser.parse_args()
-        
+
         while True:
             try:
                 return get_converted_code(args['audio_transcript'], args['coding_language'], args['question']), 200
-                    
+
             except Exception as e:
                 pass
-                
+
 
 options_fields = {
     "option_num": fields.Integer,
@@ -297,37 +296,37 @@ class PA(Resource):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
             return {"message": "Module not found"}, 404
-        
+
         course = Course.query.filter_by(course_id=module.course_id).first()
-        
+
         pa = Assignment.query.filter_by(module_id=module_id,
                                         assessment_type=AssessmentType.PRACTICE,
                                         assignment_type=AssignmentType.THEORY).first()
-        
+
         if not pa:
             pa = Assignment(module_id=module_id,
                             assignment_type=AssignmentType.THEORY,
                             assessment_type=AssessmentType.PRACTICE,
                             due_date=datetime.today() + timedelta(days=7))
-        
+
         while True:
             try:
                 questions = generate_theory_questions(course, module)
                 break
             except Exception as e:
                 pass
-        
+
         for question in questions.__root__:
             new_question = Question(question_type=QuestionType.MCQ,
                                     question=question.question)
-            
+
             for option in question.options:
                 new_question.options.append(Option(option_num=option.option_num,
                                                    option=option.option,
                                                    is_correct=option.is_correct))
-            
+
             pa.questions.append(new_question)
-        
+
         db.session.add(pa)
         db.session.commit()
 
@@ -445,25 +444,24 @@ class PrPA(Resource):
             return {"message": "Module not found"}, 404
 
         course = Course.query.filter_by(course_id=module.course_id).first()
-        
+
         prpa = Assignment.query.filter_by(module_id=module_id,
                                           assessment_type=AssessmentType.PRACTICE,
                                           assignment_type=AssignmentType.PROGRAMMING).first()
-        
+
         if not prpa:
             prpa = Assignment(module_id=module_id,
                               assignment_type=AssignmentType.PROGRAMMING,
                               assessment_type=AssessmentType.PRACTICE,
                               due_date=datetime.today() + timedelta(days=7))
-        
+
         while True:
             try:
                 questions = generate_programming_questions(course, module)
                 break
             except Exception as e:
                 pass
-            
-        
+
         for question in questions.__root__:
             new_question = Question(question_type=QuestionType.PROGRAMMING,
                                     question=question)
@@ -474,13 +472,13 @@ class PrPA(Resource):
                     break
                 except Exception as e:
                     pass
-            
+
             for test_case in test_cases[:len(test_cases) // 2]:
                 new_question.test_cases.append(
                     TestCase(test_case_type=TestCaseType.PUBLIC,
                              input_data=test_case.test_input,
                              expected_output=test_case.expected_output))
-                
+
             for test_case in test_cases[len(test_cases) // 2:]:
                 new_question.test_cases.append(
                     TestCase(test_case_type=TestCaseType.PRIVATE,
@@ -491,7 +489,7 @@ class PrPA(Resource):
 
         db.session.add(prpa)
         db.session.commit()
-        
+
         return {"message": "Practice programming assignment created successfully"}, 201
 
 
@@ -563,7 +561,8 @@ class GrPA(Resource):
 class PASubmission(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('submission', type=list, required=True, location='json', help='Submission content is required')
+        self.parser.add_argument('submission', type=list, required=True, location='json',
+                                 help='Submission content is required')
         super(PASubmission, self).__init__()
 
     @auth_required('token')
@@ -575,16 +574,16 @@ class PASubmission(Resource):
         assignment = Assignment.query.filter_by(module_id=module_id,
                                                 assessment_type=AssessmentType.PRACTICE,
                                                 assignment_type=AssignmentType.THEORY).first()
-        
+
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
         # Check if the content is not empty
         if not submission_content:
             return {'message': 'Empty Submission'}, 404
-        
+
         grade = 0
-        
+
         for sub in submission_content:
             q = Question.query.filter_by(question_id=sub['question_id']).first()
             if q is None:
@@ -595,12 +594,12 @@ class PASubmission(Resource):
                         grade += 1
                     else:
                         break
-        
+
         grade = f'{grade}/{len(assignment.questions)}'
-        
+
         submission = Submission.query.filter_by(user_id=current_user.id,
                                                 assignment_id=assignment.assignment_id).first()
-        
+
         if submission:
             submission.submission = str(submission_content)
             submission.submission_date = submission_date
@@ -610,7 +609,7 @@ class PASubmission(Resource):
                 "message": "Practice Assignment Submission updated successfully",
                 "grade": grade
             }, 200
-        
+
         submission = Submission(
             user_id=current_user.id,
             assignment_id=assignment.assignment_id,
@@ -633,7 +632,8 @@ class GASubmission(Resource):
     def __init__(self):
 
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('submission', type=list, required=True, location='json', help='Submission content is required')
+        self.parser.add_argument('submission', type=list, required=True, location='json',
+                                 help='Submission content is required')
 
         super(GASubmission, self).__init__()
 
@@ -646,7 +646,7 @@ class GASubmission(Resource):
         assignment = Assignment.query.filter_by(module_id=module_id,
                                                 assessment_type=AssessmentType.GRADED,
                                                 assignment_type=AssignmentType.THEORY).first()
-        
+
         if not assignment:
             return {'message': 'Assignment not found'}, 404
 
@@ -655,7 +655,7 @@ class GASubmission(Resource):
             return {'message': 'Empty Submission'}, 404
 
         grade = 0
-        
+
         for sub in submission_content:
             q = Question.query.filter_by(question_id=sub['question_id']).first()
             if q is None:
@@ -666,12 +666,12 @@ class GASubmission(Resource):
                         grade += 1
                     else:
                         break
-        
+
         grade = f'{grade}/{len(assignment.questions)}'
-        
+
         submission = Submission.query.filter_by(user_id=current_user.id,
                                                 assignment_id=assignment.assignment_id).first()
-        
+
         if submission:
             submission.submission = str(submission_content)
             submission.submission_date = submission_date
@@ -681,7 +681,7 @@ class GASubmission(Resource):
                 "message": "Graded Assignment Submission updated successfully",
                 "grade": grade
             }, 200
-        
+
         submission = Submission(
             user_id=current_user.id,
             assignment_id=assignment.assignment_id,
@@ -695,7 +695,7 @@ class GASubmission(Resource):
 
         return {
             "message": "Graded Assignment Solution submitted successfully",
-            "grade": grade    
+            "grade": grade
         }, 201
 
 
@@ -713,7 +713,7 @@ class PrPASubmission(Resource):
         question = Question.query.filter_by(question_id=args['question_id']).first()
         code_submission = args['code_submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        
+
         assignment = Assignment.query.filter_by(module_id=module_id,
                                                 assessment_type=AssessmentType.PRACTICE,
                                                 assignment_type=AssignmentType.PROGRAMMING).first()
@@ -726,9 +726,9 @@ class PrPASubmission(Resource):
             return {'message': 'Empty Submission'}, 404
 
         test_cases = question.test_cases
-        
+
         run_result = run_code(code_submission, test_cases)
-        
+
         public_grade = 0
         public_count = 0
         private_grade = 0
@@ -743,20 +743,20 @@ class PrPASubmission(Resource):
                 private_count += 1
                 if result['result'] == test_case.expected_output:
                     private_grade += 1
-        
+
         public_grade = f'{public_grade}/{public_count}'
         private_grade = f'{private_grade}/{private_count}'
-        
+
         submission = Submission.query.filter_by(user_id=current_user.id,
                                                 assignment_id=assignment.assignment_id).first()
-        
+
         if submission:
             submission_content = eval(submission.submission)
             for sub in submission_content:
                 if sub['question_id'] == question.question_id:
                     sub['code_submission'] = code_submission
                     break
-            
+
             submission.submission = str(submission_content)
             submission.submission_date = submission_date
             submission.grade = str({
@@ -769,12 +769,12 @@ class PrPASubmission(Resource):
                 "public_grade": public_grade,
                 "private_grade": private_grade
             }, 200
-        
+
         submission_content = [{
             "question_id": question.question_id,
             "code_submission": code_submission
         }]
-        
+
         submission = Submission(
             user_id=current_user.id,
             assignment_id=assignment.assignment_id,
@@ -810,7 +810,7 @@ class GrPASubmission(Resource):
         question = Question.query.filter_by(question_id=args['question_id']).first()
         code_submission = args['code_submission']
         submission_date = args.get('submission_date', datetime.now(timezone.utc))
-        
+
         assignment = Assignment.query.filter_by(module_id=module_id,
                                                 assessment_type=AssessmentType.GRADED,
                                                 assignment_type=AssignmentType.PROGRAMMING).first()
@@ -823,9 +823,9 @@ class GrPASubmission(Resource):
             return {'message': 'Empty Submission'}, 404
 
         test_cases = question.test_cases
-        
+
         run_result = run_code(code_submission, test_cases)
-        
+
         public_grade = 0
         public_count = 0
         private_grade = 0
@@ -840,20 +840,20 @@ class GrPASubmission(Resource):
                 private_count += 1
                 if result['result'] == test_case.expected_output:
                     private_grade += 1
-        
+
         public_grade = f'{public_grade}/{public_count}'
         private_grade = f'{private_grade}/{private_count}'
-        
+
         submission = Submission.query.filter_by(user_id=current_user.id,
                                                 assignment_id=assignment.assignment_id).first()
-        
+
         if submission:
             submission_content = eval(submission.submission)
             for sub in submission_content:
                 if sub['question_id'] == question.question_id:
                     sub['code_submission'] = code_submission
                     break
-            
+
             submission.submission = str(submission_content)
             submission.submission_date = submission_date
             submission.grade = str({
@@ -866,12 +866,12 @@ class GrPASubmission(Resource):
                 "public_grade": public_grade,
                 "private_grade": private_grade
             }, 200
-        
+
         submission_content = [{
             "question_id": question.question_id,
             "code_submission": code_submission
         }]
-        
+
         submission = Submission(
             user_id=current_user.id,
             assignment_id=assignment.assignment_id,
@@ -897,31 +897,33 @@ class TestCaseGenerator(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('question', type=str, required=True, help='Question is required')
-        self.parser.add_argument('num_public_test_cases', type=int, required=True, help='Number of public test cases is required')
-        self.parser.add_argument('num_private_test_cases', type=int, required=True, help='Number of private test cases is required')
-        
+        self.parser.add_argument('num_public_test_cases', type=int, required=True,
+                                 help='Number of public test cases is required')
+        self.parser.add_argument('num_private_test_cases', type=int, required=True,
+                                 help='Number of private test cases is required')
+
         super(TestCaseGenerator, self).__init__()
-    
+
     @auth_required('token')
     @roles_required('instructor')
     def post(self, module_id):
         args = self.parser.parse_args()
-        
+
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
             return {"message": "Module not found"}, 404
 
         course = Course.query.filter_by(course_id=module.course_id).first()
-        
+
         num_test_cases = args['num_public_test_cases'] + args['num_private_test_cases']
-        
+
         while True:
             try:
                 test_cases = generate_test_cases(module, args['question'], num_test_cases).__root__
                 break
             except Exception as e:
                 pass
-        
+
         return {
             "question": args['question'],
             "public": [
@@ -944,49 +946,51 @@ class TestCaseGenerator(Resource):
 class FeedbackGenerator(Resource):
     def __init__(self):
         self.theoryParser = reqparse.RequestParser()
-        self.theoryParser.add_argument('questions', type=list, required=True, location='json', help='Questions are required')
-        
+        self.theoryParser.add_argument('questions', type=list, required=True, location='json',
+                                       help='Questions are required')
+
         self.programmingParser = reqparse.RequestParser()
-        self.programmingParser.add_argument('question_id', type=int, required=True, location='json', help='Question ID is required')
-        self.programmingParser.add_argument('code_submission', type=str, required=True, location='json', help='Code Submission is required')
-        
+        self.programmingParser.add_argument('question_id', type=int, required=True, location='json',
+                                            help='Question ID is required')
+        self.programmingParser.add_argument('code_submission', type=str, required=True, location='json',
+                                            help='Code Submission is required')
+
         super(FeedbackGenerator, self).__init__()
-        
+
     @auth_required('token')
     def post(self, assessment_type, assignment_type, module_id):
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
             return {"message": "Module not found"}, 404
-        
+
         if assessment_type.upper() not in ['PRACTICE', 'GRADED']:
             return {"message": "Invalid assessment type"}, 404
-        
+
         if assignment_type.upper() == 'THEORY':
             questions = self.theoryParser.parse_args()['questions']
-            
+
             feedbacks = []
-            
+
             for q in questions:
                 question = Question.query.filter_by(question_id=q['question_id'],
                                                     question_type=QuestionType.MCQ).first()
-                
+
                 chosen_option = Option.query.filter_by(question_id=question.question_id,
                                                        option_num=q['submitted_option_num']).first()
-                
+
                 correct_option = Option.query.filter_by(question_id=question.question_id,
                                                         is_correct=True).first()
-                
+
                 options = Option.query.filter_by(question_id=question.question_id).all()
-                
+
                 while True:
                     try:
-                        generated_feedback = generate_theory_feedback(module, question, options,\
-                            chosen_option, correct_option)
+                        generated_feedback = generate_theory_feedback(module, question, options, \
+                                                                      chosen_option, correct_option)
                         break
                     except Exception as e:
                         pass
-                
-                
+
                 feedback = {
                     "question_id": question.question_id,
                     "correct_option_num": correct_option.option_num,
@@ -994,39 +998,39 @@ class FeedbackGenerator(Resource):
                     "feedback": generated_feedback.feedback,
                     "tip": generated_feedback.tip
                 }
-                
+
                 feedbacks.append(feedback)
-            
+
             return {"feedback": feedbacks}, 200
-        
+
         elif assignment_type.upper() == 'PROGRAMMING':
             args = self.programmingParser.parse_args()
-            
+
             question = Question.query.filter_by(question_id=args['question_id'],
                                                 question_type=QuestionType.PROGRAMMING).first()
-            
+
             test_cases = [{
-                            "test_input": test_case.input_data,
-                            "expected_output": test_case.expected_output
-                          } for test_case in question.test_cases]
-            
+                "test_input": test_case.input_data,
+                "expected_output": test_case.expected_output
+            } for test_case in question.test_cases]
+
             code_submission = args['code_submission']
-                
+
             while True:
                 try:
                     generated_feedback = generate_programming_feedback(module, question, test_cases, \
-                        code_submission) 
+                                                                       code_submission)
                     break
                 except Exception as e:
                     pass
-            
+
             return {
                 "question_id": question.question_id,
                 "code_submission": code_submission,
                 "feedback": generated_feedback.feedback,
                 "tip": generated_feedback.tip
             }, 200
-        
+
         else:
             return {"message": "Invalid assignment type"}, 404
 
@@ -1036,32 +1040,32 @@ class CodeHelp(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('question_id', type=int, required=True, help='Question ID is required')
         self.parser.add_argument('partial_code', type=str, required=True, help='Partial Code is required')
-        
+
         super(CodeHelp, self).__init__()
-        
+
     @auth_required('token')
     def post(self, module_id):
         args = self.parser.parse_args()
-        
+
         module = Module.query.filter_by(module_id=module_id).first()
         if not module:
             return {"message": "Module not found"}, 404
-        
+
         question = Question.query.filter_by(question_id=args['question_id']).first()
         partial_code = args['partial_code']
-        
+
         test_cases = [{
-                        "test_input": test_case.input_data,
-                        "expected_output": test_case.expected_output
-                      } for test_case in question.test_cases]
-        
+            "test_input": test_case.input_data,
+            "expected_output": test_case.expected_output
+        } for test_case in question.test_cases]
+
         while True:
             try:
                 code_help = generate_code_help(module, question, test_cases, partial_code)
                 break
             except Exception as e:
                 pass
-        
+
         return {
             "question_id": question.question_id,
             "partial_code": partial_code,
@@ -1074,18 +1078,18 @@ class CodeRunner(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument("question_id", type=int, required=True, help="Question ID is required")
         self.parser.add_argument("code", type=str, required=True, help="Code is required")
-    
+
     @auth_required('token')
     def post(self):
         args = self.parser.parse_args()
-        
+
         question = Question.query.filter_by(question_id=args['question_id']).first()
         code = args['code']
-        
+
         test_cases = question.test_cases
-        
+
         run_result = run_code(code, test_cases)
-        
+
         public_grade = 0
         public_count = 0
         for result in run_result:
@@ -1094,11 +1098,11 @@ class CodeRunner(Resource):
                 public_count += 1
                 if result['result'] == test_case.expected_output:
                     public_grade += 1
-        
+
         public_grade = f'{public_grade}/{public_count}'
-        
+
         return {
-            "result":run_result,
+            "result": run_result,
             "public_grade": public_grade
         }, 200
 
@@ -1109,7 +1113,7 @@ class PainPointDetector(Resource):
         sub = Submission.query.filter_by(user_id=current_user.id).all()
         if len(sub) == 0:
             return {"message": "No Submissions Found"}, 404
-        
+
         submissions = []
         for s in sub:
             assignment = Assignment.query.filter_by(assignment_id=s.assignment_id).first()
@@ -1121,7 +1125,7 @@ class PainPointDetector(Resource):
             ele['assessment_type'] = assignment.assessment_type
             ele['grade'] = s.grade
             submissions.append(ele)
-        
+
         while True:
             try:
                 return detect_pain_points(str(submissions))

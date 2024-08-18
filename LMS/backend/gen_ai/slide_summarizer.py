@@ -10,11 +10,12 @@ os.environ["GROQ_API_KEY"] = "gsk_h1iTl5q2UoIroiyYYnszWGdyb3FY85x1WvxS6TvKnKpXXA
 
 model = ChatGroq(temperature=0.8, model="llama3-8b-8192")
 
+
 def download_slide(file_id):
     download_url = f'https://drive.google.com/uc?id={file_id}'
     output = f'downloads/{file_id}.pdf'
     gdown.download(download_url, output, quiet=False)
-    
+
     print(f"Downloaded file: {output}")
 
 
@@ -40,18 +41,18 @@ def get_slide_summary(course, lesson):
             
         Do not return an extra text like 'Here is the response' apart from JSON.
         """
-    
+
     prompt = PromptTemplate.from_template(prompt_template)
 
     file_id = lesson.slide_url.split('/d/')[1].split('/')[0]
-    
+
     if not os.path.exists(f"downloads/{file_id}.pdf"):
         download_slide(file_id)
-    
+
     loader = PyPDFLoader(f"downloads/{file_id}.pdf")
     docs = loader.load()
 
     chain = load_summarize_chain(model, chain_type="stuff", prompt=prompt)
     response = chain.invoke(docs)
-    
+
     return json.loads(response['output_text'])

@@ -7,6 +7,7 @@ os.environ["GROQ_API_KEY"] = "gsk_h1iTl5q2UoIroiyYYnszWGdyb3FY85x1WvxS6TvKnKpXXA
 
 model = ChatGroq(temperature=0.8, model="llama3-8b-8192")
 
+
 def get_translation(source_text, target_language):
     prompt = f"""
         You are given a piece of source text in English that needs to be translated to
@@ -23,7 +24,7 @@ def get_translation(source_text, target_language):
             "target_language": <Target Language>,
             "translated_text": <Translated Text>
         """
-    
+
     response = model.invoke(prompt)
     print(response.content)
     return json.loads(response.content)

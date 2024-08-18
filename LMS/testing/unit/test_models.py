@@ -86,7 +86,6 @@ def test_course_module_relationship(init_database):
     assert lesson1.lesson_description == 'Installing the basics'
     assert submission1.assignment_id == assignment1.assignment_id
 
-
 # def test_lesson_module_relationship(init_database):
 #     """
 #     When a Lesson is added to a Module, check if the lesson is added correctly

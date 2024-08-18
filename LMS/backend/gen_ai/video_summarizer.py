@@ -9,6 +9,7 @@ os.environ["GROQ_API_KEY"] = "gsk_h1iTl5q2UoIroiyYYnszWGdyb3FY85x1WvxS6TvKnKpXXA
 
 model = ChatGroq(temperature=0.8, model="llama3-8b-8192")
 
+
 def get_video_summary(course, lesson):
     prompt_template = f"""
         You are given the transcript of a video lesson on the topic {lesson.lesson_name} for the course
@@ -31,7 +32,7 @@ def get_video_summary(course, lesson):
         Remember not to provide boilerplate text, no explanation, no unnecessary text like 'Here is the
         JSON response' to explain the output.
         """
-    
+
     prompt = PromptTemplate.from_template(prompt_template)
 
     loader = YoutubeLoader.from_youtube_url(lesson.video_url)
@@ -39,6 +40,6 @@ def get_video_summary(course, lesson):
 
     chain = load_summarize_chain(model, chain_type="stuff", prompt=prompt)
     response = chain.invoke(docs)
-    
+
     print(response['output_text'])
     return json.loads(response['output_text'])

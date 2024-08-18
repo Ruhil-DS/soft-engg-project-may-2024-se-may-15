@@ -7,7 +7,6 @@ from config import DevelopmentConfig, TestingConfig
 from database import db, User, Role
 from api import api
 
-
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 api.init_app(app)
@@ -60,6 +59,8 @@ def login():
             "id": user.id
         }), 200
     else:
+        print(user.password)
+        print(password)
         return jsonify({"message": "Invalid password"}), 401
 
 

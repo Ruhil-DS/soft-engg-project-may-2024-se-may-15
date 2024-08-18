@@ -9,10 +9,12 @@ model = ChatGroq(temperature=1.0, model="llama3-8b-8192")
 
 store = {}
 
+
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in store:
         store[session_id] = InMemoryChatMessageHistory()
     return store[session_id]
+
 
 with_message_history = RunnableWithMessageHistory(model, get_session_history)
 
@@ -24,7 +26,7 @@ class Chatbot:
         self.setup()
         if knowledge:
             self.update_knowledge(knowledge)
-    
+
     def setup(self):
         with_message_history.invoke(
             [
@@ -61,7 +63,7 @@ class Chatbot:
             ],
             config=self.config
         )
-        
+
     def update_knowledge(self, knowledge):
         with_message_history.invoke(
             [
@@ -82,5 +84,5 @@ class Chatbot:
             ],
             config=self.config
         )
-    
+
         return response.content

@@ -71,15 +71,18 @@ class Note(db.Model):
     lesson_id = db.Column(db.Integer, db.ForeignKey('module.module_id'), nullable=False)
     note = db.Column(db.Text, nullable=False)
 
+
 # Enumerator for Assessment Types
 class AssessmentType(enum.Enum):
-    PRACTICE = 'practice'       # Practice
-    GRADED = 'graded'           # Graded
+    PRACTICE = 'practice'  # Practice
+    GRADED = 'graded'  # Graded
+
 
 # Enumerator for Assignment Types
 class AssignmentType(enum.Enum):
-    THEORY = 'theory'             # Theory Assignment with MCQs
-    PROGRAMMING = 'programming'   # Programming Assignment
+    THEORY = 'theory'  # Theory Assignment with MCQs
+    PROGRAMMING = 'programming'  # Programming Assignment
+
 
 # Model for Assignments
 class Assignment(db.Model):
@@ -143,7 +146,8 @@ class Submission(db.Model):
     submission_date = db.Column(db.DateTime(), nullable=False)
     submission = db.Column(db.Text, nullable=False)
     grade = db.Column(db.String(), nullable=False)
-    
+
+
 # Model for Chatbot Knowledge Base
 class Chatbot(db.Model):
     __tablename__ = 'chatbot'

@@ -7,6 +7,7 @@ os.environ["GROQ_API_KEY"] = "gsk_h1iTl5q2UoIroiyYYnszWGdyb3FY85x1WvxS6TvKnKpXXA
 
 model = ChatGroq(temperature=0.8, model="llama3-8b-8192")
 
+
 def get_converted_code(transcript, coding_language, question):
     prompt = f"""
         You work for an online Learner Management System (LMS). One of the functionalities of this
@@ -36,7 +37,7 @@ def get_converted_code(transcript, coding_language, question):
             "coding_language": <Coding Language>,
             "formatted_code": <Formatted Code as a String in a single line with escape characters>
         """
-    
+
     response = model.invoke(prompt)
     print(response.content)
     return json.loads(response.content)
