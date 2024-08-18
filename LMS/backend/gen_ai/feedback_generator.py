@@ -8,9 +8,11 @@ os.environ["GROQ_API_KEY"] = "gsk_h1iTl5q2UoIroiyYYnszWGdyb3FY85x1WvxS6TvKnKpXXA
 
 model = ChatGroq(temperature=0.4, model="llama3-8b-8192")
 
+
 class Feedback(BaseModel):
     feedback: str = Field(description="feedback for the question highlighting where the student might have gone wrong")
     tip: str = Field(description="tip to help the student for avoiding such mistakes in the future")
+
 
 def generate_theory_feedback(module, question, options, chosen_option, correct_option):
     prompt_template = """
@@ -31,22 +33,23 @@ def generate_theory_feedback(module, question, options, chosen_option, correct_o
         
         {format_instructions}
         """
-    
+
     parser = PydanticOutputParser(pydantic_object=Feedback)
-    
+
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=["module_name", "question", "option_1", "option_2", "option_3", "option_4", \
-            "chosen_option", "correct_option"],
+                         "chosen_option", "correct_option"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
-    
+
     chain = prompt | model | parser
-    
+
     return chain.invoke({"module_name": module.module_name, "question": question.question, \
-        "option_1": options[0].option, "option_2": options[1].option, "option_3": options[2].option, \
-        "option_4": options[3].option, "chosen_option": chosen_option.option, \
-        "correct_option": correct_option.option})
+                         "option_1": options[0].option, "option_2": options[1].option, "option_3": options[2].option, \
+                         "option_4": options[3].option, "chosen_option": chosen_option.option, \
+                         "correct_option": correct_option.option})
+
 
 def generate_programming_feedback(module, question, test_cases, submitted_code):
     prompt_template = """
@@ -71,23 +74,25 @@ def generate_programming_feedback(module, question, test_cases, submitted_code):
         
         {format_instructions}
         """
-    
+
     parser = PydanticOutputParser(pydantic_object=Feedback)
-    
+
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=["module_name", "question", "test_cases", "submitted_code"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
-    
+
     chain = prompt | model | parser
-    
+
     return chain.invoke({"module_name": module.module_name, "question": question.question, \
-        "test_cases": str(test_cases), "submitted_code": submitted_code})
+                         "test_cases": str(test_cases), "submitted_code": submitted_code})
 
 
 class CodingHelp(BaseModel):
-    suggestion: str = Field(description="coding suggestion and hints to nudge student to improve their code to achieve the task")
+    suggestion: str = Field(
+        description="coding suggestion and hints to nudge student to improve their code to achieve the task")
+
 
 def generate_code_help(module, question, test_cases, partial_code):
     prompt_template = """
@@ -115,16 +120,16 @@ def generate_code_help(module, question, test_cases, partial_code):
         
         {format_instructions}
         """
-    
+
     parser = PydanticOutputParser(pydantic_object=CodingHelp)
-    
+
     prompt = PromptTemplate(
         template=prompt_template,
         input_variables=["module_name", "question", "test_cases", "partial_code"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
-    
+
     chain = prompt | model | parser
-    
+
     return chain.invoke({"module_name": module.module_name, "question": question.question, \
-        "test_cases": str(test_cases), "partial_code": partial_code})
+                         "test_cases": str(test_cases), "partial_code": partial_code})

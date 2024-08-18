@@ -25,6 +25,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(DevelopmentConfig):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URL', 'sqlite:///test.db')
+    LOGIN_DISABLED = True
     WTF_CSRF_ENABLED = False
 
 

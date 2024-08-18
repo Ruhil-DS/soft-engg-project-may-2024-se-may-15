@@ -1,12 +1,16 @@
 import datetime
 import uuid
-
+import os
+import sys
 import pytest
+import json
 
-from ..backend.config import TestingConfig
-from ..backend.database import Assignment, AssignmentType, Course, Lesson, Module, Note, Option, Question, QuestionType, \
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend')))
+from config import TestingConfig
+from database import Assignment, AssignmentType, AssessmentType, Course, Lesson, Module, Note, Option, Question, \
+    QuestionType, \
     Role, Submission, User, db
-from ..backend.main import app as flask_app
+from main import app as flask_app
 
 
 @pytest.fixture(scope='module')
@@ -39,18 +43,14 @@ def init_database(app):
     """
     with app.app_context():
         unique_id = str(uuid.uuid4())
-        default_role = Role(name='student_test')
-        db.session.add(default_role)
-        default_role = db.session.query(Role).filter_by(name='student').first()
-        default_user = User(username='test_user_default', email='patkennedy79@gmail.com', password='FlaskIsAwesome',
-                            fs_uniquifier=unique_id, roles=[default_role])
+        default_user = User(username='test_user_default', email='a@gmail.com', password='a',
+                            fs_uniquifier=unique_id)
         db.session.add(default_user)
         default_user = db.session.query(User).filter_by(username='test_user_default').first()
         # roles_table = RolesUsers(user_id=default_user.id, role_id=default_role.id) Doesn't work can't be bothered to fix. Please don't ask for this.
         unique_id = str(uuid.uuid4())
         second_user = User(username='test_user_2', email='patrick@yahoo.com', password='FlaskIsTheBest987',
                            fs_uniquifier=unique_id)
-        # db.session.add(roles_table)
         db.session.add(second_user)
         db.session.commit()
 
@@ -68,7 +68,8 @@ def init_database(app):
         lesson1 = db.session.query(Lesson).filter_by(lesson_name='Flask Setup').first()
         note1 = Note(user_id=default_user.id, lesson_id=lesson1.lesson_id, note='This is a test note')
         db.session.add(note1)
-        assignment1 = Assignment(module_id=module1.module_id, assignment_type=AssignmentType.PA,
+        assignment1 = Assignment(module_id=module1.module_id, assignment_type=AssignmentType.THEORY,
+                                 assessment_type=AssessmentType.PRACTICE,
                                  due_date=datetime.datetime.now())
         db.session.add(assignment1)
         assignment1 = db.session.query(Assignment).filter_by(module_id=module1.module_id).first()
@@ -97,23 +98,14 @@ def log_in_default_user(test_client):
     """
     Fixture to log in the default user for testing.
     """
-    test_client.post('/api/v1/login',
-                     json={'email': 'patkennedy79@gmail.com', 'password': 'FlaskIsAwesome'})
-
-    yield
-
-    test_client.get('/logout')
-
-
-@pytest.fixture(scope='function')
-def log_in_second_user(test_client):
-    """
-    Fixture to log in the second user for testing.
-    """
-    test_client.post('/api/v1/login',
-                     json={'email': 'patrick@yahoo.com', 'password': 'FlaskIsTheBest987'})
-
-    yield
+    _ = test_client.post('/api/v1/register',
+                         json={'username': 'test_user_default', 'email': 'a@gmail.com', 'password': 'a',
+                               'role': 'student'})
+    response = test_client.post('/api/v1/login',
+                                json={'email': 'a@gmail.com', 'password': 'a'})
+    response = json.loads(response.data)
+    token = response['token']
+    yield token
 
     test_client.get('/logout')
 
