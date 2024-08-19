@@ -3,12 +3,12 @@ Codebase of the project for the course Software Engineering under the BS in Data
 
 Execute the following commands to run the project:
 
-  `cd LMS/`
-  
-  `./runner.sh`
+```bash
+cd LMS/  
+./runner.sh
+```
    
   
-
 Roles:
 
 Frontend Developer:
@@ -25,7 +25,7 @@ Either Side:
 - Ganesh
 - Lalit
 
-When in doubt follow the Pep 8 conventions
+When in doubt follow the Pep 8 conventions.
 
 Naming Conventions:
 - Vue: PascalCase
